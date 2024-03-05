@@ -4,10 +4,11 @@ import (
 	"gorm.io/gorm"
 
 	"github.com/AkbarFikri/BREECE-BE/internal/app/entity"
+
 )
 
 type UserRepository interface {
-	FindById(id string) entity.User
+	FindById(id string) (entity.User, error)
 	FindByEmail(email string) (entity.User, error)
 	Insert(user entity.User) error
 	Update(user entity.User) error
@@ -33,8 +34,12 @@ func (r *userRepository) FindByEmail(email string) (entity.User, error) {
 }
 
 // FindById implements UserRepository.
-func (r *userRepository) FindById(id string) entity.User {
-	panic("unimplemented")
+func (r *userRepository) FindById(id string) (entity.User, error) {
+	var user entity.User
+	if err := r.db.Where("id = ?", id).First(&user).Error; err != nil {
+		return user, err
+	}
+	return user, nil
 }
 
 // Insert implements UserRepository.
@@ -47,5 +52,8 @@ func (r *userRepository) Insert(user entity.User) error {
 
 // Update implements UserRepository.
 func (r *userRepository) Update(user entity.User) error {
-	panic("unimplemented")
+	if err := r.db.Where("id = ?", user.ID).Save(&user).Error; err != nil {
+		return err
+	}
+	return nil
 }

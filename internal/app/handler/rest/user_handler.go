@@ -4,6 +4,7 @@ import (
 	"github.com/gin-gonic/gin"
 
 	"github.com/AkbarFikri/BREECE-BE/internal/app/service"
+
 )
 
 type UserHandler struct {
@@ -11,5 +12,5 @@ type UserHandler struct {
 }
 
 func (h *UserHandler) current(ctx *gin.Context) {
-
+	// TODO generate handler for get current user login
 }

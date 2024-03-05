@@ -9,22 +9,27 @@ import (
 
 	"github.com/AkbarFikri/BREECE-BE/internal/app/entity"
 	"github.com/AkbarFikri/BREECE-BE/internal/app/repository"
+	"github.com/AkbarFikri/BREECE-BE/internal/pkg/gocron"
 	"github.com/AkbarFikri/BREECE-BE/internal/pkg/helper"
 	"github.com/AkbarFikri/BREECE-BE/internal/pkg/model"
+
 )
 
 type UserService interface {
 	Register(req model.CreateUserRequest) (model.ServiceResponse, error)
 	Login(req model.LoginUserRequest) (model.ServiceResponse, error)
+	VerifyOTP(req model.OtpUserRequest) (model.ServiceResponse, error)
 }
 
 type userService struct {
-	UserRepository repository.UserRepository
+	UserRepository  repository.UserRepository
+	CacheRepository repository.CacheRepository
 }
 
-func NewUserService(ur repository.UserRepository) UserService {
+func NewUserService(ur repository.UserRepository, cr repository.CacheRepository) UserService {
 	return &userService{
-		UserRepository: ur,
+		UserRepository:  ur,
+		CacheRepository: cr,
 	}
 }
 
@@ -49,11 +54,11 @@ func (s *userService) Register(req model.CreateUserRequest) (model.ServiceRespon
 		}, err
 	}
 
-	var user entity.User
-	user.ID = uuid.New().String()
-	user.Email = req.Email
-	user.Username = req.Username
-	user.Password = hashPass
+	user := entity.User{
+		ID:       uuid.New().String(),
+		Email:    req.Email,
+		Password: hashPass,
+	}
 
 	if err := s.UserRepository.Insert(user); err != nil {
 		return model.ServiceResponse{
@@ -64,10 +69,19 @@ func (s *userService) Register(req model.CreateUserRequest) (model.ServiceRespon
 		}, err
 	}
 
+	// Added OTP
+	referenceID := helper.GenerateRandomString(16)
+	OTP := helper.GenerateRandomInt(4)
+
+	s.CacheRepository.Set("otp:"+referenceID, []byte(OTP))
+	s.CacheRepository.Set("user-ref:"+referenceID, []byte(user.ID))
+
+	go gocron.ScheduleDeleteInvalidOtp(5*time.Minute, s.CacheRepository, referenceID)
+
 	res := model.CreateUserResponse{
-		ID:       user.ID,
-		Email:    user.Email,
-		Username: user.Username,
+		ID:          user.ID,
+		Email:       user.Email,
+		ReferenceID: referenceID,
 	}
 
 	return model.ServiceResponse{
@@ -117,5 +131,64 @@ func (s *userService) Login(req model.LoginUserRequest) (model.ServiceResponse, 
 			"token":    accessToken,
 			"expireAt": time.Now().Add(24 * time.Hour),
 		},
+	}, nil
+}
+
+func (s *userService) VerifyOTP(req model.OtpUserRequest) (model.ServiceResponse, error) {
+	val, err := s.CacheRepository.Get("otp:" + req.ReferenceID)
+	if err != nil {
+		return model.ServiceResponse{
+			Code:    http.StatusBadRequest,
+			Error:   true,
+			Message: "Invalid OTP",
+			Data:    nil,
+		}, err
+	}
+
+	otp := string(val)
+	if otp != req.Otp {
+		return model.ServiceResponse{
+			Code:    http.StatusBadRequest,
+			Error:   true,
+			Message: "Invalid OTP",
+			Data:    nil,
+		}, err
+	}
+
+	val, _ = s.CacheRepository.Get("user-ref:" + req.ReferenceID)
+	user, err := s.UserRepository.FindById(string(val))
+	if err != nil {
+		return model.ServiceResponse{
+			Code:    http.StatusNotFound,
+			Error:   true,
+			Message: "Something went wrong, unable to find user",
+			Data:    nil,
+		}, err
+	}
+
+	user.IsEmailVerified = true
+	user.EmailVerifiedAt = time.Now()
+
+	if err := s.UserRepository.Update(user); err != nil {
+		return model.ServiceResponse{
+			Code:    http.StatusInternalServerError,
+			Error:   true,
+			Message: "Something went wrong, unable to update user",
+			Data:    nil,
+		}, err
+	}
+
+	data := model.OtpUserResponse{
+		ID:              user.ID,
+		Email:           user.Email,
+		IsEmailVerified: user.IsEmailVerified,
+		EmailVerifiedAt: user.EmailVerifiedAt,
+	}
+
+	return model.ServiceResponse{
+		Code:    http.StatusOK,
+		Error:   false,
+		Message: "Email verified!",
+		Data:    data,
 	}, nil
 }

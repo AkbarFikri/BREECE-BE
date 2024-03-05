@@ -8,6 +8,7 @@ import (
 	"github.com/AkbarFikri/BREECE-BE/internal/app/service"
 	"github.com/AkbarFikri/BREECE-BE/internal/pkg/helper"
 	"github.com/AkbarFikri/BREECE-BE/internal/pkg/model"
+
 )
 
 type AuthHandler struct {
@@ -67,4 +68,26 @@ func (h *AuthHandler) Login(ctx *gin.Context) {
 
 	helper.SuccessResponse(ctx, res)
 
+}
+
+func (h *AuthHandler) VerifyOTP(ctx *gin.Context) {
+	var req model.OtpUserRequest
+
+	if err := ctx.ShouldBindJSON(&req); err != nil {
+		helper.ErrorResponse(ctx, model.ServiceResponse{
+			Code:    http.StatusBadRequest,
+			Error:   true,
+			Message: "Bad request, data provided is invalid",
+			Data:    nil,
+		})
+		return
+	}
+
+	res, err := h.userService.VerifyOTP(req)
+	if err != nil {
+		helper.ErrorResponse(ctx, res)
+		return
+	}
+
+	helper.SuccessResponse(ctx, res)
 }

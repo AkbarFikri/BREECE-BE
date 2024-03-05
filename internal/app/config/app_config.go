@@ -18,9 +18,10 @@ type StartUpConfig struct {
 func StartUp(config *StartUpConfig) {
 	// Repository
 	userRepository := repository.NewUserRepository(config.DB)
+	cacheRepository := repository.NewCacheRepository()
 
 	// Service
-	userService := service.NewUserService(userRepository)
+	userService := service.NewUserService(userRepository, cacheRepository)
 
 	// Handler
 	authHandler := rest.NewAuthHandler(userService)

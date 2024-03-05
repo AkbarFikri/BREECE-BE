@@ -7,7 +7,6 @@ import (
 
 	"github.com/AkbarFikri/BREECE-BE/internal/app/handler/rest"
 	"github.com/AkbarFikri/BREECE-BE/internal/app/handler/rest/middleware"
-
 )
 
 type RouteConfig struct {
@@ -36,4 +35,5 @@ func (c *RouteConfig) AuthRoute(r *gin.RouterGroup) {
 	authEnds.GET("/check", c.AuthHandler.HealthCheck)
 	authEnds.POST("/register", c.AuthHandler.Register)
 	authEnds.POST("/login", c.AuthHandler.Login)
+	authEnds.POST("/otp", c.AuthHandler.VerifyOTP)
 }
