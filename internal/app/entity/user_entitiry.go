@@ -7,7 +7,7 @@ type User struct {
 	Email             string `gorm:"not null;unique"`
 	Password          string `gorm:"not null"`
 	Nim               uint64
-	Name              string
+	FullName          string
 	Prodi             string
 	Universitas       string
 	IsEmailVerified   bool
@@ -15,4 +15,8 @@ type User struct {
 	IsProfileVerified bool
 	IsAdmin           bool
 	IsOrganizer       bool
+	ID_Url            string
+	Invoices          []Invoice
+	Events            []Event
+	Ticekts           []Ticket
 }

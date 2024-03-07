@@ -11,8 +11,8 @@ import (
 	"github.com/AkbarFikri/BREECE-BE/internal/app/repository"
 	"github.com/AkbarFikri/BREECE-BE/internal/pkg/gocron"
 	"github.com/AkbarFikri/BREECE-BE/internal/pkg/helper"
+	"github.com/AkbarFikri/BREECE-BE/internal/pkg/mailer"
 	"github.com/AkbarFikri/BREECE-BE/internal/pkg/model"
-
 )
 
 type UserService interface {
@@ -58,6 +58,7 @@ func (s *userService) Register(req model.CreateUserRequest) (model.ServiceRespon
 		ID:       uuid.New().String(),
 		Email:    req.Email,
 		Password: hashPass,
+		FullName: req.FullName,
 	}
 
 	if err := s.UserRepository.Insert(user); err != nil {
@@ -73,6 +74,8 @@ func (s *userService) Register(req model.CreateUserRequest) (model.ServiceRespon
 	referenceID := helper.GenerateRandomString(16)
 	OTP := helper.GenerateRandomInt(4)
 
+	go mailer.Send(user.Email, "Your OTP Verification", string(OTP), user.FullName)
+
 	s.CacheRepository.Set("otp:"+referenceID, []byte(OTP))
 	s.CacheRepository.Set("user-ref:"+referenceID, []byte(user.ID))
 
@@ -81,6 +84,7 @@ func (s *userService) Register(req model.CreateUserRequest) (model.ServiceRespon
 	res := model.CreateUserResponse{
 		ID:          user.ID,
 		Email:       user.Email,
+		FullName:    user.FullName,
 		ReferenceID: referenceID,
 	}
 
