@@ -1,7 +1,7 @@
 package entity
 
 type Category struct {
-	ID     string
+	ID     string `gorm:"primaryKey"`
 	Name   string
-	Events []Event
+	Events []Event `gorm:"foreignKey:CategoryID"`
 }

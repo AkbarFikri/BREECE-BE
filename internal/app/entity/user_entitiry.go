@@ -16,7 +16,7 @@ type User struct {
 	IsAdmin           bool
 	IsOrganizer       bool
 	ID_Url            string
-	Invoices          []Invoice
-	Events            []Event
-	Ticekts           []Ticket
+	Invoices          []Invoice `gorm:"foreignKey:UserID"`
+	Events            []Event   `gorm:"foreignKey:OrganizeBy"`
+	Ticekts           []Ticket  `gorm:"foreignKey:UserID"`
 }

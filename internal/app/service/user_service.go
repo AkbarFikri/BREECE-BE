@@ -91,7 +91,7 @@ func (s *userService) Register(req model.CreateUserRequest) (model.ServiceRespon
 	return model.ServiceResponse{
 		Code:    http.StatusOK,
 		Error:   false,
-		Message: "Successfully register user",
+		Message: "Successfully register user and send OTP to email",
 		Data:    res,
 	}, nil
 }
@@ -132,8 +132,8 @@ func (s *userService) Login(req model.LoginUserRequest) (model.ServiceResponse, 
 		Error:   false,
 		Message: "Successfully login",
 		Data: gin.H{
-			"token":    accessToken,
-			"expireAt": time.Now().Add(24 * time.Hour),
+			"token":     accessToken,
+			"expire_at": time.Now().Add(24 * time.Hour),
 		},
 	}, nil
 }
@@ -192,7 +192,7 @@ func (s *userService) VerifyOTP(req model.OtpUserRequest) (model.ServiceResponse
 	return model.ServiceResponse{
 		Code:    http.StatusOK,
 		Error:   false,
-		Message: "Email verified!",
+		Message: "Successfully to verified email",
 		Data:    data,
 	}, nil
 }

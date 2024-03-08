@@ -3,10 +3,10 @@ package entity
 import "time"
 
 type Invoice struct {
-	ID        string
+	ID        string `gorm:"primaryKey"`
 	UserID    string
 	Status    string
 	Snap      string
-	Ticket    Ticket
+	Ticket    Ticket `gorm:"foreignKey:InvoiceID"`
 	CreatedAt time.Time
 }
