@@ -1,0 +1,215 @@
+openapi: 3.0.3
+info:
+  title: BREECE API SPECIFICATION
+  description: |-
+    This is the documentation made by Akbar Fikri. You can find all about my API Specification for BREECE Apps.
+    If you have criticism or suggestions, don't hesitate to let me know via Github issue
+
+    Some useful links:
+    - [Github Repository](https://github.com/AkbarFikri/BREECE-BE)
+    - [BREECE Website](breece.ub.ac.id)
+  # termsOfService: http://swagger.io/terms/
+  contact:
+    email: akbarfikriabdillah@gmail.com
+  license:
+    name: MIT License
+    url: https://opensource.org/license/mit
+  version: 1.0.0
+externalDocs:
+  description: Find out more about BREECE
+  url: http://swagger.io
+servers:
+  - url: https://api.breece.ub.ac.id/v1
+tags:
+  - name: Auth
+    description: Its a group for Authentication End Points.
+    externalDocs:
+      description: Find out more
+      url: http://swagger.io
+  - name: User
+    description: Its a group for User End Points
+    externalDocs:
+      description: Find out more
+      url: http://swagger.io
+
+paths:
+  /auth/register:
+    post:
+      tags:
+        - auth
+      summary: Register new user
+      operationId: registerUser
+      requestBody:
+        description: Use for register new user in apps
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  example: emailmu@gmail.com
+                password:
+                  type: string
+                  example: kucingkulucu
+                full_name:
+                  type: string
+                  example: si kucing akbar
+        required: true
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: boolean
+                    example: false
+                  message:
+                    type: string
+                    example: Successfully register user and send OTP to email
+                  data:
+                    type: object
+                    properties:
+                      id:
+                        type: string
+                      email:
+                        type: string
+                        example: emailmu@gmail.com
+                      full_name:
+                        type: string
+                        example: si kucing akbar
+                      reference_id:
+                        type: string
+
+        "400":
+          description: Invalid Request data
+        "500":
+          description: Internal server error
+  /auth/login:
+    post:
+      tags:
+        - auth
+      summary: Login user
+      operationId: loginUser
+      requestBody:
+        description: Use for login user
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  example: emailmu@gmail.com
+                password:
+                  type: string
+                  example: kucingkulucu
+        required: true
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: boolean
+                    example: false
+                  message:
+                    type: string
+                    example: Successfully login
+                  data:
+                    type: object
+                    properties:
+                      token:
+                        type: string
+                      expire_at:
+                        type: string
+                        format: date-time
+        "400":
+          description: Invalid Request data
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: Invalid email or password
+                  data:
+                    type: object
+                    example:
+        "500":
+          description: Internal server error
+  /auth/otp:
+    post:
+      tags:
+        - auth
+      summary: Verify OTP email
+      operationId: verifyOtpFromRegister
+      requestBody:
+        description: Use the reference ID that available in response body register
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                reference_id:
+                  type: string
+                otp:
+                  type: string
+
+        required: true
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: boolean
+                    example: false
+                  message:
+                    type: string
+                    example: Successfully to verified email
+                  data:
+                    type: object
+                    properties:
+                      id:
+                        type: string
+                      email:
+                        type: string
+                        example: emailmu@gmail.com
+                      is_email_verified:
+                        type: boolean
+                        example: true
+                      email_verified_at:
+                        type: string
+                        format: date-time
+        "400":
+          description: Invalid Request data
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: Invalid OTP
+                  data:
+                    type: object
+                    example:
+        "500":
+          description: Internal server error

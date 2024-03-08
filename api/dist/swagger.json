@@ -1,0 +1,425 @@
+{
+  "swagger": "3.0.3",
+  "info": {
+    "title": "BREECE API SPECIFICATION",
+    "description": "This is the documentation made by Akbar Fikri. You can find all about my API Specification for BREECE Apps.\nIf you have criticism or suggestions, don't hesitate to let me know via Github issue\n\nSome useful links:\n- [Github Repository](https://github.com/AkbarFikri/BREECE-BE)\n- [BREECE Website](breece.ub.ac.id)",
+    "contact": {
+      "email": "akbarfikriabdillah@gmail.com"
+    },
+    "license": {
+      "name": "MIT License",
+      "url": "https://opensource.org/license/mit"
+    },
+    "version": "1.0.0"
+  },
+  "externalDocs": {
+    "description": "Find out more about BREECE",
+    "url": "http://swagger.io"
+  },
+  "servers": [
+    {
+      "url": "https://breece.akbarfikri.site/api/v1"
+    }
+  ],
+  "tags": [
+    {
+      "name": "Auth",
+      "description": "Its a group for Authentication End Points.",
+      "externalDocs": {
+        "description": "Find out more",
+        "url": "http://swagger.io"
+      }
+    },
+    {
+      "name": "User",
+      "description": "Its a group for User End Points",
+      "externalDocs": {
+        "description": "Find out more",
+        "url": "http://swagger.io"
+      }
+    }
+  ],
+  "paths": {
+    "/auth/register": {
+      "post": {
+        "tags": ["Auth"],
+        "summary": "Register new user",
+        "operationId": "registerUser",
+        "requestBody": {
+          "description": "Use for register new user in apps",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "email": {
+                    "type": "string",
+                    "example": "emailmu@gmail.com"
+                  },
+                  "password": {
+                    "type": "string",
+                    "example": "kucingkulucu"
+                  },
+                  "full_name": {
+                    "type": "string",
+                    "example": "si kucing akbar"
+                  }
+                }
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "boolean",
+                      "example": false
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Successfully register user and send OTP to email"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "string"
+                        },
+                        "email": {
+                          "type": "string",
+                          "example": "emailmu@gmail.com"
+                        },
+                        "full_name": {
+                          "type": "string",
+                          "example": "si kucing akbar"
+                        },
+                        "reference_id": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid Request data"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      }
+    },
+    "/auth/login": {
+      "post": {
+        "tags": ["Auth"],
+        "summary": "Login user",
+        "operationId": "loginUser",
+        "requestBody": {
+          "description": "Use for login user",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "email": {
+                    "type": "string",
+                    "example": "emailmu@gmail.com"
+                  },
+                  "password": {
+                    "type": "string",
+                    "example": "kucingkulucu"
+                  }
+                }
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "boolean",
+                      "example": false
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Successfully login"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "token": {
+                          "type": "string"
+                        },
+                        "expire_at": {
+                          "type": "string",
+                          "format": "date-time"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid Request data",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Invalid email or password"
+                    },
+                    "data": {
+                      "type": "object",
+                      "example": null
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      }
+    },
+    "/auth/otp": {
+      "post": {
+        "tags": ["Auth"],
+        "summary": "Verify OTP email",
+        "operationId": "verifyOtpFromRegister",
+        "requestBody": {
+          "description": "Use the reference ID that available in response body register",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "reference_id": {
+                    "type": "string"
+                  },
+                  "otp": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "boolean",
+                      "example": false
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Successfully to verified email"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "string"
+                        },
+                        "email": {
+                          "type": "string",
+                          "example": "emailmu@gmail.com"
+                        },
+                        "is_email_verified": {
+                          "type": "boolean",
+                          "example": true
+                        },
+                        "email_verified_at": {
+                          "type": "string",
+                          "format": "date-time"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid Request data",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Invalid OTP"
+                    },
+                    "data": {
+                      "type": "object",
+                      "example": null
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      }
+    },
+    "/user/current": {
+      "get": {
+        "tags": ["User"],
+        "summary": "Get user Login Information",
+        "operationId": "getUserLoginInformation",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "boolean",
+                      "example": false
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Successfully to verified email"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "string"
+                        },
+                        "email": {
+                          "type": "string",
+                          "example": "emailmu@gmail.com"
+                        },
+                        "nim": {
+                          "type": "integer"
+                        },
+                        "prodi": {
+                          "type": "string"
+                        },
+                        "fakultas": {
+                          "type": "string"
+                        },
+                        "universitas": {
+                          "type": "string"
+                        },
+                        "id_url": {
+                          "type": "string",
+                          "example": "https://s3.amazon.com/asdkhuawoidsjldjawidjs.png"
+                        },
+                        "is_profile_verified": {
+                          "type": "boolean",
+                          "example": false
+                        },
+                        "is_email_verified": {
+                          "type": "boolean",
+                          "example": true
+                        },
+                        "is_admin": {
+                          "type": "boolean",
+                          "example": false
+                        },
+                        "is_organizer": {
+                          "type": "boolean",
+                          "example": false
+                        },
+                        "email_verified_at": {
+                          "type": "string",
+                          "format": "date-time"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Invalid Request data",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Authorization is required for this route."
+                    },
+                    "data": {
+                      "type": "object",
+                      "example": null
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
+      }
+    }
+  }
+}
