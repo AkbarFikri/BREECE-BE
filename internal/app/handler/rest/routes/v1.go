@@ -7,6 +7,7 @@ import (
 
 	"github.com/AkbarFikri/BREECE-BE/internal/app/handler/rest"
 	"github.com/AkbarFikri/BREECE-BE/internal/app/handler/rest/middleware"
+
 )
 
 type RouteConfig struct {
@@ -27,7 +28,11 @@ func (c *RouteConfig) ServeRoute() {
 	c.App.Use(gin.Recovery())
 	c.App.Use(middleware.CORSMiddleware())
 	v1 := c.App.Group("/api/v1")
+	v1.StaticFS("/docs", http.Dir("api/dist"))
+	v1.StaticFS("/doc", http.Dir("api"))
 	c.AuthRoute(v1)
+
+
 }
 
 func (c *RouteConfig) AuthRoute(r *gin.RouterGroup) {

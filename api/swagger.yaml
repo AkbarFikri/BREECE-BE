@@ -15,11 +15,14 @@ info:
     name: MIT License
     url: https://opensource.org/license/mit
   version: 1.0.0
+
 externalDocs:
   description: Find out more about BREECE
   url: http://swagger.io
+
 servers:
-  - url: https://api.breece.ub.ac.id/v1
+  - url: https://breece.akbarfikri.site/api/v1
+
 tags:
   - name: Auth
     description: Its a group for Authentication End Points.
@@ -36,7 +39,7 @@ paths:
   /auth/register:
     post:
       tags:
-        - auth
+        - Auth
       summary: Register new user
       operationId: registerUser
       requestBody:
@@ -91,7 +94,7 @@ paths:
   /auth/login:
     post:
       tags:
-        - auth
+        - Auth
       summary: Login user
       operationId: loginUser
       requestBody:
@@ -151,7 +154,7 @@ paths:
   /auth/otp:
     post:
       tags:
-        - auth
+        - Auth
       summary: Verify OTP email
       operationId: verifyOtpFromRegister
       requestBody:
@@ -213,3 +216,85 @@ paths:
                     example:
         "500":
           description: Internal server error
+
+  /user/current:
+    get:
+      tags:
+        - User
+      summary: Get user Login Information
+      operationId: getUserLoginInformation
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: boolean
+                    example: false
+                  message:
+                    type: string
+                    example: Successfully to verified email
+                  data:
+                    type: object
+                    properties:
+                      id:
+                        type: string
+                      email:
+                        type: string
+                        example: emailmu@gmail.com
+                      nim:
+                        type: integer
+                      prodi:
+                        type: string
+                      fakultas:
+                        type: string
+                      universitas:
+                        type: string
+                      id_url:
+                        type: string
+                        example: https://s3.amazon.com/asdkhuawoidsjldjawidjs.png
+                      is_profile_verified:
+                        type: boolean
+                        example: false
+                      is_email_verified:
+                        type: boolean
+                        example: true
+                      is_admin:
+                        type: boolean
+                        example: false
+                      is_organizer:
+                        type: boolean
+                        example: false
+                      email_verified_at:
+                        type: string
+                        format: date-time
+        "401":
+          description: Invalid Request data
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: Authorization is required for this route.
+                  data:
+                    type: object
+                    example:
+        "500":
+          description: Internal server error
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
