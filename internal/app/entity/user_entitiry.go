@@ -6,7 +6,7 @@ type User struct {
 	ID                string `gorm:"primaryKey"`
 	Email             string `gorm:"not null;unique"`
 	Password          string `gorm:"not null"`
-	Nim               uint64
+	Nim_nik           uint64
 	FullName          string
 	Prodi             string
 	Universitas       string
