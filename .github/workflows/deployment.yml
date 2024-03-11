@@ -1,0 +1,28 @@
+
+name: CD
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  build:
+    runds-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: executing remote ssh commands using ssh key
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          key: ${{ secrets.PRIVATE_KEY }}
+          port: ${{ secrets.PORT }}
+          script: |
+            cd /home/lightyredstone/app/breece-be
+            git pull origin main
+            git status
+            go mod tidy
+            go build -o main ./cmd/app
+            systemctl restart breece.service
