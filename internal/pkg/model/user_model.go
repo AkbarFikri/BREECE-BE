@@ -1,6 +1,9 @@
 package model
 
-import "time"
+import (
+	"mime/multipart"
+	"time"
+)
 
 type CreateUserRequest struct {
 	Email    string `json:"email" binding:"required,email"`
@@ -13,9 +16,9 @@ type CreateUserRequest struct {
 }
 
 type CreateUserResponse struct {
-	ID          string
-	Email       string
-	FullName    string
+	ID          string `json:"id"`
+	Email       string `json:"email"`
+	FullName    string `json:"full_name"`
 	ReferenceID string `json:"reference_id"`
 }
 
@@ -30,8 +33,38 @@ type OtpUserRequest struct {
 }
 
 type OtpUserResponse struct {
-	ID              string
-	Email           string
-	IsEmailVerified bool
-	EmailVerifiedAt time.Time
+	ID              string    `json:"id"`
+	Email           string    `json:"email"`
+	IsEmailVerified bool      `json:"is_email_verified"`
+	EmailVerifiedAt time.Time `json:"email_verified_at"`
+}
+
+type ProfileUserRequest struct {
+	ID          string                `form:"id" binding:"required"`
+	NimNik      string                `form:"nim_nik" binding:"required"`
+	Prodi       string                `form:"prodi"`
+	Universitas string                `form:"universitas" binding:"required"`
+	IdFile      *multipart.FileHeader `form:"id_file" binding:"required"`
+}
+
+type ProfileUserResponse struct {
+	ID                string `json:"id"`
+	Email             string `json:"email"`
+	FullName          string `json:"full_name"`
+	NimNik            string `json:"nim_nik"`
+	Prodi             string `json:"prodi"`
+	Universitas       string `json:"universitas"`
+	ID_Url            string `json:"id_url"`
+	IsOrganizer       bool   `json:"is_organizer"`
+	IsEmailVerified   bool   `json:"is_email_verified"`
+	IsProfileVerified bool   `json:"is_profile_verified"`
+}
+
+type UserTokenData struct {
+	ID                string
+	Email             string
+	IsEmailVerified   bool
+	IsProfileVerified bool
+	IsAdmin           bool
+	IsOrganizer       bool
 }

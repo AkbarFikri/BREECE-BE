@@ -90,3 +90,25 @@ func (h *AuthHandler) VerifyOTP(ctx *gin.Context) {
 
 	helper.SuccessResponse(ctx, res)
 }
+
+func (h *AuthHandler) VerifyProfile(ctx *gin.Context) {
+	var req model.ProfileUserRequest
+
+	if err := ctx.ShouldBind(&req); err != nil {
+		helper.ErrorResponse(ctx, model.ServiceResponse{
+			Code:    http.StatusBadRequest,
+			Error:   true,
+			Message: "Bad request, data provided is invalid",
+			Data:    nil,
+		})
+		return
+	}
+
+	res, err := h.userService.VerifyProfile(req)
+	if err != nil {
+		helper.ErrorResponse(ctx, res)
+		return
+	}
+
+	helper.SuccessResponse(ctx, res)
+}

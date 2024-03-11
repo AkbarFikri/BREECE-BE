@@ -216,6 +216,88 @@ paths:
                     example:
         "500":
           description: Internal server error
+  /auth/profile:
+    post:
+      tags:
+        - Auth
+      summary: Verify User profile
+      operationId: verifyProfileUser
+      requestBody:
+        description: Use the ID from user
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                id_file:
+                  type: string
+                  format: binary
+                id:
+                  type: string
+                  format: uuid
+                nim_nik:
+                  type: string
+                prodi:
+                  type: string
+                universitas:
+                  type: string
+        required: true
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: boolean
+                    example: false
+                  message:
+                    type: string
+                    example: Successfully to verified profile
+                  data:
+                    type: object
+                    properties:
+                      id:
+                        type: string
+                      email:
+                        type: string
+                        example: emailmu@gmail.com
+                      full_name:
+                        type: string
+                      nim_nik:
+                        type: string
+                      prodi:
+                        type: string
+                      universitas:
+                        type: string
+                      id_url:
+                        type: string
+                      is_email_verified:
+                        type: boolean
+                        example: true
+                      is_profile_verified:
+                        type: boolean
+                        example: true
+        "400":
+          description: Invalid Request data
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: Bad request, data provided is invalid
+                  data:
+                    type: object
+                    example:
+        "500":
+          description: Internal server error
 
   /user/current:
     get:

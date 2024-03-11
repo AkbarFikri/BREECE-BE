@@ -7,7 +7,6 @@ import (
 
 	"github.com/AkbarFikri/BREECE-BE/internal/app/handler/rest"
 	"github.com/AkbarFikri/BREECE-BE/internal/app/handler/rest/middleware"
-
 )
 
 type RouteConfig struct {
@@ -31,7 +30,7 @@ func (c *RouteConfig) ServeRoute() {
 	v1.StaticFS("/docs", http.Dir("api/dist"))
 	v1.StaticFS("/doc", http.Dir("api"))
 	c.AuthRoute(v1)
-
+	c.UserRoute(v1)
 
 }
 
@@ -41,4 +40,11 @@ func (c *RouteConfig) AuthRoute(r *gin.RouterGroup) {
 	authEnds.POST("/register", c.AuthHandler.Register)
 	authEnds.POST("/login", c.AuthHandler.Login)
 	authEnds.POST("/otp", c.AuthHandler.VerifyOTP)
+	authEnds.POST("/profile", c.AuthHandler.VerifyProfile)
+}
+
+func (c *RouteConfig) UserRoute(r *gin.RouterGroup) {
+	userEnds := r.Group("/user")
+	userEnds.Use(middleware.JwtUser())
+	userEnds.GET("/current", c.UserHandler.Current)
 }

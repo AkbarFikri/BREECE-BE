@@ -5,17 +5,17 @@ import "time"
 type User struct {
 	ID                string `gorm:"primaryKey"`
 	Email             string `gorm:"not null;unique"`
-	Password          string `gorm:"not null"`
-	Nim_nik           uint64
+	Password          string
+	NimNik            string
 	FullName          string
 	Prodi             string
 	Universitas       string
-	IsEmailVerified   bool
-	EmailVerifiedAt   time.Time
-	IsProfileVerified bool
-	IsAdmin           bool
-	IsOrganizer       bool
-	ID_Url            string
+	IsEmailVerified   bool      `gorm:"not null"`
+	EmailVerifiedAt   time.Time `gorm:"not null"`
+	IsProfileVerified bool      `gorm:"not null"`
+	IsAdmin           bool      `gorm:"not null"`
+	IsOrganizer       bool      `gorm:"not null"`
+	ID_Url            string    `gorm:"not null"`
 	Invoices          []Invoice `gorm:"foreignKey:UserID"`
 	Events            []Event   `gorm:"foreignKey:OrganizeBy"`
 	Ticekts           []Ticket  `gorm:"foreignKey:UserID"`

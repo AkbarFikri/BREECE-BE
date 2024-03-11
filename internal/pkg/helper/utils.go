@@ -4,6 +4,10 @@ import (
 	"math/rand"
 	"time"
 
+	"github.com/gin-gonic/gin"
+
+	"github.com/AkbarFikri/BREECE-BE/internal/pkg/model"
+
 )
 
 func GenerateRandomString(n int) string {
@@ -24,4 +28,11 @@ func GenerateRandomInt(n int) string {
 		b[i] = letterRunes[r.Intn(len(letterRunes))]
 	}
 	return string(b)
+}
+
+func GetUserLoginData(c *gin.Context) model.UserTokenData {
+	getUser, _ := c.Get("user")
+	user := getUser.(model.UserTokenData)
+
+	return user
 }

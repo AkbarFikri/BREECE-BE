@@ -41,5 +41,7 @@ func NewDatabase() *gorm.DB {
 }
 
 func migrate(db *gorm.DB) {
-	db.AutoMigrate(&entity.User{})
+	db.AutoMigrate(&entity.Category{})
+	db.AutoMigrate(&entity.Event{}, &entity.Invoice{})
+	db.AutoMigrate(&entity.User{}, &entity.Ticket{})
 }
