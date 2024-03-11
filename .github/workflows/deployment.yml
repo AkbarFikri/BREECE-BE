@@ -24,5 +24,6 @@ jobs:
             git pull origin main
             git status
             go mod tidy
+            export PATH=$PATH:/usr/local/go/bin
             go build -o main ./cmd/app
             systemctl restart breece.service
