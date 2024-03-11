@@ -23,7 +23,7 @@ jobs:
             cd /home/lightyredstone/app/breece
             git pull origin main
             git status
-            go mod tidy
             export PATH=$PATH:/usr/local/go/bin
+            go mod tidy
             go build -o main ./cmd/app
             systemctl restart breece.service
