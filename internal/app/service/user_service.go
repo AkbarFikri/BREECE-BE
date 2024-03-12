@@ -2,6 +2,7 @@ package service
 
 import (
 	"net/http"
+	"strings"
 	"time"
 
 	supabasestorageuploader "github.com/adityarizkyramadhan/supabase-storage-uploader"
@@ -14,6 +15,7 @@ import (
 	"github.com/AkbarFikri/BREECE-BE/internal/pkg/helper"
 	"github.com/AkbarFikri/BREECE-BE/internal/pkg/mailer"
 	"github.com/AkbarFikri/BREECE-BE/internal/pkg/model"
+
 )
 
 type UserService interface {
@@ -243,6 +245,10 @@ func (s *userService) VerifyProfile(req model.ProfileUserRequest) (model.Service
 	user.Prodi = req.Prodi
 	user.Universitas = req.Universitas
 	user.IsProfileVerified = true
+
+	if strings.Contains(strings.ToLower(req.Universitas), "brawijaya") {
+		user.IsBrawijaya = true;
+	}
 
 	if err := s.UserRepository.Update(user); err != nil {
 		return model.ServiceResponse{
