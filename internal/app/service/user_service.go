@@ -149,7 +149,7 @@ func (s *userService) Login(req model.LoginUserRequest) (model.ServiceResponse, 
 		Message: "Successfully login",
 		Data: gin.H{
 			"token":     accessToken,
-			"expire_at": time.Now().Add(24 * time.Hour),
+			"expire_at": time.Now().Add(24 * time.Hour).UTC().String(),
 		},
 	}, nil
 }
@@ -247,7 +247,7 @@ func (s *userService) VerifyProfile(req model.ProfileUserRequest) (model.Service
 	user.IsProfileVerified = true
 
 	if strings.Contains(strings.ToLower(req.Universitas), "brawijaya") {
-		user.IsBrawijaya = true;
+		user.IsBrawijaya = true
 	}
 
 	if err := s.UserRepository.Update(user); err != nil {

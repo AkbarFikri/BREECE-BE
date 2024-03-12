@@ -10,6 +10,7 @@ import (
 	"github.com/AkbarFikri/BREECE-BE/internal/app/entity"
 	"github.com/AkbarFikri/BREECE-BE/internal/app/repository"
 	"github.com/AkbarFikri/BREECE-BE/internal/pkg/model"
+
 )
 
 type EventService interface {
@@ -44,6 +45,16 @@ func (s *eventService) PostEvent(user model.UserTokenData, req model.EventReques
 			Code:    http.StatusBadRequest,
 			Error:   true,
 			Message: "Invalid time format for field start_at",
+		}, nil
+	}
+
+	datenow, _ := time.Parse("2006-01-02 15:04:05 -0700 MST", time.Now().UTC().Format("2006-01-02")+" 00:00:00 +0000 UTC")
+	timenow, _ := time.Parse("2006-01-02 15:04:05 -0700 MST", time.Now().UTC().Format("2006-01-02 15:04:05 -0700 MST"))
+	if date.After(datenow) || startAt.After(timenow) {
+		return model.ServiceResponse{
+			Code:    http.StatusForbidden,
+			Error:   true,
+			Message: "Invalid time request, the event holding time cannot be less than the current time",
 		}, nil
 	}
 
