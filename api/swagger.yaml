@@ -25,12 +25,17 @@ servers:
 
 tags:
   - name: Auth
-    description: Its a group for Authentication End Points.
+    description: Its a group for Authentication Endpoints.
     externalDocs:
       description: Find out more
       url: http://swagger.io
   - name: User
-    description: Its a group for User End Points
+    description: Its a group for User Endpoints
+    externalDocs:
+      description: Find out more
+      url: http://swagger.io
+  - name: Event
+    description: Its a group for Event Endpoints
     externalDocs:
       description: Find out more
       url: http://swagger.io
@@ -368,6 +373,219 @@ paths:
                   message:
                     type: string
                     example: Authorization is required for this route.
+                  data:
+                    type: object
+                    example:
+        "500":
+          description: Internal server error
+
+  /event:
+    get:
+      tags:
+        - Event
+      summary: its use for fetch event data.
+      operationId: fetchEvent
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: query
+          name: search
+          schema:
+            type: string
+            example: Orasi
+          description: Its use for search feature
+        - in: query
+          name: place
+          schema:
+            type: string
+            example: NKRI
+          description: Its use for filter by place. It can be dynamic by input user
+        - in: query
+          name: date
+          schema:
+            type: string
+            example: 2022-10-3
+            format: YY-MM-DD
+          description: Its use for filter by date.
+        - in: query
+          name: category
+          schema:
+            type: string
+            example: asdwadlhaodiaw-dashdowadasdlk-asdjawduh
+            format: uuid
+          description: Its use for filter by category. Use the category_id that provided from category endpoint
+        - in: query
+          name: page
+          schema:
+            type: number
+            example: 1
+          description: Its use for pagination, per page is contain 10 object. Default value is 1.
+
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: boolean
+                    example: false
+                  message:
+                    type: string
+                    example: Successfully to find all events
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                          format: uuid
+                        title:
+                          type: string
+                        description:
+                          type: string
+                        speakers:
+                          type: array
+                          items: {}
+                        speaker_roles:
+                          type: array
+                          items: {}
+                        place:
+                          type: string
+                        date:
+                          type: string
+                          format: date-time
+                        start_at:
+                          type: string
+                          format: date-time
+                        organize_by:
+                          type: string
+                          format: uuid
+
+        "404":
+          description: Success but data record is not found.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: Event with data provided is not found.
+                  data:
+                    type: array
+                    example: []
+        "500":
+          description: Internal server error
+    post:
+      tags:
+        - Event
+      summary: Its use for post new event. Provided just for organizer
+      operationId: postNewEvent
+      security:
+        - bearerAuth: []
+      requestBody:
+        description: Use the ID from user
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required:
+                - "title"
+                - "description"
+                - "speakers"
+                - "speaker_roles"
+                - "date"
+                - "start_at"
+                - "category_id"
+                - "place"
+                - "is_public"
+              properties:
+                banner:
+                  type: string
+                  format: binary
+                title:
+                  type: string
+                description:
+                  type: string
+                speakers:
+                  type: array
+                speaker_roles:
+                  type: array
+                date:
+                  type: string
+                  format: date
+                start_at:
+                  type: string
+                  format: date-time
+                category_id:
+                  type: string
+                  format: uuid
+                link:
+                  type: string
+                place:
+                  type: string
+                is_public:
+                  type: boolean
+
+        required: true
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: boolean
+                    example: false
+                  message:
+                    type: string
+                    example: Successfully to verified profile
+                  data:
+                    type: object
+                    properties:
+                      id:
+                        type: string
+                      email:
+                        type: string
+                        example: emailmu@gmail.com
+                      full_name:
+                        type: string
+                      nim_nik:
+                        type: string
+                      prodi:
+                        type: string
+                      universitas:
+                        type: string
+                      id_url:
+                        type: string
+                      is_email_verified:
+                        type: boolean
+                        example: true
+                      is_profile_verified:
+                        type: boolean
+                        example: true
+        "400":
+          description: Invalid Request data
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: Bad request, data provided is invalid
                   data:
                     type: object
                     example:
