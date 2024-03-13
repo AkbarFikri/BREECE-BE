@@ -1,6 +1,7 @@
 package service
 
 import (
+	"errors"
 	"net/http"
 	"time"
 
@@ -15,6 +16,7 @@ import (
 
 type EventService interface {
 	PostEvent(user model.UserTokenData, req model.EventRequest) (model.ServiceResponse, error)
+	FetchEvent(user model.UserTokenData, params model.FilterParam) (model.ServiceResponse, error)
 }
 
 type eventService struct {
@@ -121,5 +123,50 @@ func (s *eventService) PostEvent(user model.UserTokenData, req model.EventReques
 		Error:   false,
 		Message: "Successfully to create event.",
 		Data:    res,
+	}, nil
+}
+
+func (s *eventService) FetchEvent(user model.UserTokenData, params model.FilterParam) (model.ServiceResponse, error) {
+	if params.Page == 0 {
+		params.Page = 1
+	}
+
+	params.IsPublic = !user.IsBrawijaya
+
+	if params.Date != "" {
+		_, err := time.Parse("2006-01-02", params.Date)
+		if err != nil {
+			return model.ServiceResponse{
+				Code:    http.StatusInternalServerError,
+				Error:   true,
+				Message: "Invalid time format on field date query param",
+			}, err
+		}
+
+		params.Date = params.Date + " 00:00:00 +0000 UTC"
+	}
+
+	events, err := s.EventRepository.FindWithFilter(params)
+	if err != nil {
+		return model.ServiceResponse{
+			Code:    http.StatusNotFound,
+			Error:   true,
+			Message: "Something went wrong, events with filter params provided is not found.",
+		}, err
+	}
+
+	if len(events) == 0 {
+		return model.ServiceResponse{
+			Code:    http.StatusNotFound,
+			Error:   true,
+			Message: "Events with filter params provided is not found.",
+		}, errors.New("Record not found")
+	}
+
+	return model.ServiceResponse{
+		Code:    http.StatusOK,
+		Error:   false,
+		Message: "Successfully find all events",
+		Data:    events,
 	}, nil
 }

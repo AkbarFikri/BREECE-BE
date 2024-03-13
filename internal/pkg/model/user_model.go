@@ -67,4 +67,5 @@ type UserTokenData struct {
 	IsProfileVerified bool
 	IsAdmin           bool
 	IsOrganizer       bool
+	IsBrawijaya       bool
 }

@@ -7,7 +7,6 @@ import (
 
 	"github.com/AkbarFikri/BREECE-BE/internal/app/handler/rest"
 	"github.com/AkbarFikri/BREECE-BE/internal/app/handler/rest/middleware"
-
 )
 
 type RouteConfig struct {
@@ -56,4 +55,5 @@ func (c *RouteConfig) EventRoute(r *gin.RouterGroup) {
 	eventEnds := r.Group("/event")
 	eventEnds.Use(middleware.JwtUser())
 	eventEnds.POST("/", middleware.OrganizerRole(), c.EventHandler.PostEvent)
+	eventEnds.GET("/", c.EventHandler.GetEvent)
 }

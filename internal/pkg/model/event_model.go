@@ -2,16 +2,16 @@ package model
 
 import (
 	"mime/multipart"
-	"time"
+
 )
 
 type FilterParam struct {
-	Search   string
-	Sort     string
-	Page     int `default:1`
-	Place    string
-	Date     time.Time
-	Category string
+	Search   string `form:"search"`
+	Sort     string `form:"sort" default:"asc"`
+	Page     int    `form:"page" default:1`
+	Place    string `form:"place"`
+	Date     string `form:"date"`
+	Category string `form:"category"`
 	IsPublic bool
 }
 

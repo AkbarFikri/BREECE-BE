@@ -15,7 +15,6 @@ import (
 	"github.com/AkbarFikri/BREECE-BE/internal/pkg/helper"
 	"github.com/AkbarFikri/BREECE-BE/internal/pkg/mailer"
 	"github.com/AkbarFikri/BREECE-BE/internal/pkg/model"
-
 )
 
 type UserService interface {
@@ -132,6 +131,7 @@ func (s *userService) Login(req model.LoginUserRequest) (model.ServiceResponse, 
 		"isEmailVerified":   user.IsEmailVerified,
 		"isProfileVerified": user.IsProfileVerified,
 		"isOrganizer":       user.IsOrganizer,
+		"isBrawijaya":       user.IsBrawijaya,
 	}
 	accessToken, err := helper.SignJWT(accessData, 24)
 	if err != nil {

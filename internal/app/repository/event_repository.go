@@ -2,12 +2,12 @@ package repository
 
 import (
 	"fmt"
+	"strings"
 
 	"gorm.io/gorm"
 
 	"github.com/AkbarFikri/BREECE-BE/internal/app/entity"
 	"github.com/AkbarFikri/BREECE-BE/internal/pkg/model"
-
 )
 
 type EventRepository interface {
@@ -48,28 +48,59 @@ func (r *eventRepository) FindWithFilter(params model.FilterParam) ([]entity.Eve
 	}
 
 	if params.Category != "" {
-		sql = fmt.Sprintf("%s AND category_id = %s", sql, params.Category)
+		if strings.Contains(sql, "WHERE") {
+			sql = fmt.Sprintf("%s AND category_id = '%s'", sql, params.Category)
+		} else {
+			sql = fmt.Sprintf("%s WHERE category_id = '%s'", sql, params.Category)
+		}
+
 	}
 
 	if params.Place != "" {
-		sql = fmt.Sprintf("%s AND place LIKE '%%%s%%'", sql, params.Place)
+		if strings.Contains(sql, "WHERE") {
+			sql = fmt.Sprintf("%s OR tempat LIKE '%%%s%%'", sql, params.Place)
+		} else {
+			sql = fmt.Sprintf("%s WHERE tempat LIKE '%%%s%%'", sql, params.Place)
+		}
 	}
 
-	if !params.Date.IsZero() {
-		sql = fmt.Sprintf("%s AND date = %s", sql, params.Date)
+	if params.Date != "" {
+		// data, _ := time.Parse("2006-01-02 15:04:05 -0700 MST", params.Date)
+		if strings.Contains(sql, "WHERE") {
+			sql = fmt.Sprintf("%s AND CAST(date as DATE) = '%s'", sql, "2022-10-03")
+		} else {
+			sql = fmt.Sprintf("%s WHERE CAST(date as DATE) = '%s'", sql, "2022-10-03")
+		}
+
 	}
 
 	if params.IsPublic {
-		sql = fmt.Sprintf("%s AND is_public = true", sql)
+		if strings.Contains(sql, "WHERE") {
+			sql = fmt.Sprintf("%s AND is_public = true", sql)
+		} else {
+			sql = fmt.Sprintf("%s WHERE is_public = true", sql)
+		}
 	}
 
-	if params.Sort != "" {
-		sql = fmt.Sprintf("%s ORDER BY date %s", sql, params.Sort)
-	}
+	// if params.Sort != "" {
+	// 	sql = fmt.Sprintf("%s ORDER BY date %s", sql, params.Sort)
+	// }
 
 	perPage := 10
 
-	if err := r.db.Raw(sql).Limit(perPage).Offset((params.Page - 1) * perPage).Scan(&events).Error; err != nil {
+	// if sql != "" {
+	// 	if err := r.db.Where(sql).Limit(perPage).Offset((params.Page - 1) * perPage).Find(&events).Error; err != nil {
+	// 		return events, err
+	// 	}
+	// } else {
+	// 	if err := r.db.Limit(perPage).Offset((params.Page - 1) * perPage).Find(&events).Error; err != nil {
+	// 		return events, err
+	// 	}
+	// }
+
+	sql = fmt.Sprintf("%s OFFSET %d LIMIT %d", sql, (params.Page-1)*perPage, perPage)
+
+	if err := r.db.Raw(sql).Scan(&events).Error; err != nil {
 		return events, err
 	}
 

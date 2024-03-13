@@ -39,6 +39,28 @@ func (h *EventHandler) PostEvent(ctx *gin.Context) {
 	data, err := h.eventService.PostEvent(user, req)
 	if err != nil {
 		helper.ErrorResponse(ctx, data)
+		return
+	}
+
+	helper.SuccessResponse(ctx, data)
+}
+
+func (h *EventHandler) GetEvent(ctx *gin.Context) {
+	user := helper.GetUserLoginData(ctx)
+
+	var params model.FilterParam
+	if err := ctx.ShouldBindQuery(&params); err != nil {
+		helper.ErrorResponse(ctx, model.ServiceResponse{
+			Code:    http.StatusInternalServerError,
+			Error:   true,
+			Message: "Something went wrong.",
+		})
+	}
+
+	data, err := h.eventService.FetchEvent(user, params)
+	if err != nil {
+		helper.ErrorResponse(ctx, data)
+		return
 	}
 
 	helper.SuccessResponse(ctx, data)
