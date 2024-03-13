@@ -10,9 +10,10 @@ import (
 )
 
 type RouteConfig struct {
-	App         *gin.Engine
-	UserHandler rest.UserHandler
-	AuthHandler rest.AuthHandler
+	App          *gin.Engine
+	UserHandler  rest.UserHandler
+	AuthHandler  rest.AuthHandler
+	EventHandler rest.EventHandler
 }
 
 func (c *RouteConfig) Setup() {
@@ -31,6 +32,7 @@ func (c *RouteConfig) ServeRoute() {
 	v1.StaticFS("/doc", http.Dir("api"))
 	c.AuthRoute(v1)
 	c.UserRoute(v1)
+	c.EventRoute(v1)
 
 }
 
@@ -47,4 +49,11 @@ func (c *RouteConfig) UserRoute(r *gin.RouterGroup) {
 	userEnds := r.Group("/user")
 	userEnds.Use(middleware.JwtUser())
 	userEnds.GET("/current", c.UserHandler.Current)
+}
+
+func (c *RouteConfig) EventRoute(r *gin.RouterGroup) {
+	eventEnds := r.Group("/event")
+	eventEnds.Use(middleware.JwtUser())
+	eventEnds.POST("/", middleware.OrganizerRole(), c.EventHandler.PostEvent)
+	eventEnds.GET("/", c.EventHandler.GetEvent)
 }

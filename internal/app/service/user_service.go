@@ -2,6 +2,7 @@ package service
 
 import (
 	"net/http"
+	"strings"
 	"time"
 
 	supabasestorageuploader "github.com/adityarizkyramadhan/supabase-storage-uploader"
@@ -130,6 +131,7 @@ func (s *userService) Login(req model.LoginUserRequest) (model.ServiceResponse, 
 		"isEmailVerified":   user.IsEmailVerified,
 		"isProfileVerified": user.IsProfileVerified,
 		"isOrganizer":       user.IsOrganizer,
+		"isBrawijaya":       user.IsBrawijaya,
 	}
 	accessToken, err := helper.SignJWT(accessData, 24)
 	if err != nil {
@@ -147,7 +149,7 @@ func (s *userService) Login(req model.LoginUserRequest) (model.ServiceResponse, 
 		Message: "Successfully login",
 		Data: gin.H{
 			"token":     accessToken,
-			"expire_at": time.Now().Add(24 * time.Hour),
+			"expire_at": time.Now().Add(24 * time.Hour).UTC().String(),
 		},
 	}, nil
 }
@@ -243,6 +245,10 @@ func (s *userService) VerifyProfile(req model.ProfileUserRequest) (model.Service
 	user.Prodi = req.Prodi
 	user.Universitas = req.Universitas
 	user.IsProfileVerified = true
+
+	if strings.Contains(strings.ToLower(req.Universitas), "brawijaya") {
+		user.IsBrawijaya = true
+	}
 
 	if err := s.UserRepository.Update(user); err != nil {
 		return model.ServiceResponse{

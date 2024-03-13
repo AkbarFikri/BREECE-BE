@@ -37,7 +37,9 @@ func JwtUser() gin.HandlerFunc {
 				IsAdmin:           claims["isAdmin"].(bool),
 				IsEmailVerified:   claims["isEmailVerified"].(bool),
 				IsProfileVerified: claims["isProfileVerified"].(bool),
-				IsOrganizer:       claims["isOrganizer"].(bool)}
+				IsOrganizer:       claims["isOrganizer"].(bool),
+				IsBrawijaya:       claims["isBrawijaya"].(bool),
+			}
 			c.Set("user", user)
 			c.Next()
 		}

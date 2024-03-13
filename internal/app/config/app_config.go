@@ -9,6 +9,7 @@ import (
 	"github.com/AkbarFikri/BREECE-BE/internal/app/repository"
 	"github.com/AkbarFikri/BREECE-BE/internal/app/service"
 	"github.com/AkbarFikri/BREECE-BE/internal/pkg/supabase"
+
 )
 
 type StartUpConfig struct {
@@ -22,19 +23,23 @@ func StartUp(config *StartUpConfig) {
 
 	// Repository
 	userRepository := repository.NewUserRepository(config.DB)
+	eventRepository := repository.NewEventRepository(config.DB)
 	cacheRepository := repository.NewCacheRepository()
 
 	// Service
 	userService := service.NewUserService(userRepository, cacheRepository, supabase)
+	eventService := service.NewEventService(eventRepository, supabase)
 
 	// Handler
 	authHandler := rest.NewAuthHandler(userService)
 	userHandler := rest.NewUserHandler(userService)
+	eventHandler := rest.NewEventHandler(eventService)
 
 	routeSetting := routes.RouteConfig{
-		App:         config.App,
-		AuthHandler: authHandler,
-		UserHandler: userHandler,
+		App:          config.App,
+		AuthHandler:  authHandler,
+		UserHandler:  userHandler,
+		EventHandler: eventHandler,
 	}
 	routeSetting.Setup()
 }
