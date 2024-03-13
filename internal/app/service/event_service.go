@@ -142,8 +142,6 @@ func (s *eventService) FetchEvent(user model.UserTokenData, params model.FilterP
 				Message: "Invalid time format on field date query param",
 			}, err
 		}
-
-		params.Date = params.Date + " 00:00:00 +0000 UTC"
 	}
 
 	events, err := s.EventRepository.FindWithFilter(params)

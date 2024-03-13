@@ -8,6 +8,7 @@ import (
 
 	"github.com/AkbarFikri/BREECE-BE/internal/app/entity"
 	"github.com/AkbarFikri/BREECE-BE/internal/pkg/model"
+
 )
 
 type EventRepository interface {
@@ -67,9 +68,9 @@ func (r *eventRepository) FindWithFilter(params model.FilterParam) ([]entity.Eve
 	if params.Date != "" {
 		// data, _ := time.Parse("2006-01-02 15:04:05 -0700 MST", params.Date)
 		if strings.Contains(sql, "WHERE") {
-			sql = fmt.Sprintf("%s AND CAST(date as DATE) = '%s'", sql, "2022-10-03")
+			sql = fmt.Sprintf("%s AND CAST(date as DATE) = '%s'", sql, params.Date)
 		} else {
-			sql = fmt.Sprintf("%s WHERE CAST(date as DATE) = '%s'", sql, "2022-10-03")
+			sql = fmt.Sprintf("%s WHERE CAST(date as DATE) = '%s'", sql, params.Date)
 		}
 
 	}
