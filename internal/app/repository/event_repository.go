@@ -1,10 +1,12 @@
 package repository
 
 import (
+	"errors"
 	"fmt"
 	"strings"
 
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 
 	"github.com/AkbarFikri/BREECE-BE/internal/app/entity"
 	"github.com/AkbarFikri/BREECE-BE/internal/pkg/model"
@@ -14,6 +16,7 @@ import (
 type EventRepository interface {
 	FindAllPublic(page int) ([]entity.Event, error)
 	FindWithFilter(params model.FilterParam) ([]entity.Event, error)
+	FindForBooking(id string) (entity.Event, error)
 	Update(event entity.Event) error
 	Insert(event entity.Event) error
 }
@@ -106,6 +109,35 @@ func (r *eventRepository) FindWithFilter(params model.FilterParam) ([]entity.Eve
 	}
 
 	return events, nil
+}
+
+func (r *eventRepository) FindForBooking(id string) (entity.Event, error) {
+	var event entity.Event
+	tx := r.db.Begin()
+
+	if err := tx.Clauses(clause.Locking{Strength: "UPDATE"}).Where("id = ?", id).First(&event).Error; err != nil {
+		tx.Rollback()
+		return event, err
+	}
+
+	if event.TicketQty == 0 {
+		tx.Rollback()
+		return event, errors.New("ticket is sold out")
+	}
+
+	event.TicketQty = event.TicketQty - 1
+
+	if err := tx.Save(&event).Error; err != nil {
+		tx.Rollback()
+		return event, err
+	}
+
+	if err := tx.Commit().Error; err != nil {
+		tx.Rollback()
+		return event, errors.New("failed to commit transaction")
+	}
+
+	return event, nil
 }
 
 // Insert implements EventRepository.

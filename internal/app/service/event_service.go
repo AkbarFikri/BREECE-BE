@@ -11,7 +11,6 @@ import (
 	"github.com/AkbarFikri/BREECE-BE/internal/app/entity"
 	"github.com/AkbarFikri/BREECE-BE/internal/app/repository"
 	"github.com/AkbarFikri/BREECE-BE/internal/pkg/model"
-
 )
 
 type EventService interface {
@@ -78,6 +77,7 @@ func (s *eventService) PostEvent(user model.UserTokenData, req model.EventReques
 	}
 
 	if req.Banner == nil {
+		// TODO Upload the default banner and replace the string "default"
 		event.BannerUrl = "default"
 	} else {
 		req.Banner.Filename = "banner_" + event.ID + ".png"

@@ -554,25 +554,28 @@ paths:
                     properties:
                       id:
                         type: string
-                      email:
+                        format: uuid
+                      title:
                         type: string
-                        example: emailmu@gmail.com
-                      full_name:
+                      description:
                         type: string
-                      nim_nik:
+                      speakers:
+                        type: array
+                        items: {}
+                      speaker_roles:
+                        type: array
+                        items: {}
+                      place:
                         type: string
-                      prodi:
+                      date:
                         type: string
-                      universitas:
+                        format: date-time
+                      start_at:
                         type: string
-                      id_url:
+                        format: date-time
+                      organize_by:
                         type: string
-                      is_email_verified:
-                        type: boolean
-                        example: true
-                      is_profile_verified:
-                        type: boolean
-                        example: true
+                        format: uuid
         "400":
           description: Invalid Request data
           content:

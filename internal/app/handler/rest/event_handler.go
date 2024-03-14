@@ -8,7 +8,6 @@ import (
 	"github.com/AkbarFikri/BREECE-BE/internal/app/service"
 	"github.com/AkbarFikri/BREECE-BE/internal/pkg/helper"
 	"github.com/AkbarFikri/BREECE-BE/internal/pkg/model"
-
 )
 
 type EventHandler struct {
@@ -36,13 +35,13 @@ func (h *EventHandler) PostEvent(ctx *gin.Context) {
 		return
 	}
 
-	data, err := h.eventService.PostEvent(user, req)
+	res, err := h.eventService.PostEvent(user, req)
 	if err != nil {
-		helper.ErrorResponse(ctx, data)
+		helper.ErrorResponse(ctx, res)
 		return
 	}
 
-	helper.SuccessResponse(ctx, data)
+	helper.SuccessResponse(ctx, res)
 }
 
 func (h *EventHandler) GetEvent(ctx *gin.Context) {
@@ -57,11 +56,11 @@ func (h *EventHandler) GetEvent(ctx *gin.Context) {
 		})
 	}
 
-	data, err := h.eventService.FetchEvent(user, params)
+	res, err := h.eventService.FetchEvent(user, params)
 	if err != nil {
-		helper.ErrorResponse(ctx, data)
+		helper.ErrorResponse(ctx, res)
 		return
 	}
 
-	helper.SuccessResponse(ctx, data)
+	helper.SuccessResponse(ctx, res)
 }

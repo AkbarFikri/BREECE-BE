@@ -10,10 +10,11 @@ import (
 )
 
 type RouteConfig struct {
-	App          *gin.Engine
-	UserHandler  rest.UserHandler
-	AuthHandler  rest.AuthHandler
-	EventHandler rest.EventHandler
+	App            *gin.Engine
+	UserHandler    rest.UserHandler
+	AuthHandler    rest.AuthHandler
+	EventHandler   rest.EventHandler
+	PaymentHandler rest.PaymentHandler
 }
 
 func (c *RouteConfig) Setup() {
@@ -55,5 +56,6 @@ func (c *RouteConfig) EventRoute(r *gin.RouterGroup) {
 	eventEnds := r.Group("/event")
 	eventEnds.Use(middleware.JwtUser())
 	eventEnds.POST("/", middleware.OrganizerRole(), c.EventHandler.PostEvent)
+	eventEnds.POST("/checkout", middleware.UserOnly(), c.PaymentHandler.Checkout)
 	eventEnds.GET("/", c.EventHandler.GetEvent)
 }
