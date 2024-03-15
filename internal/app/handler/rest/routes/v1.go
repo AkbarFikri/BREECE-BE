@@ -10,10 +10,11 @@ import (
 )
 
 type RouteConfig struct {
-	App          *gin.Engine
-	UserHandler  rest.UserHandler
-	AuthHandler  rest.AuthHandler
-	EventHandler rest.EventHandler
+	App            *gin.Engine
+	UserHandler    rest.UserHandler
+	AuthHandler    rest.AuthHandler
+	EventHandler   rest.EventHandler
+	PaymentHandler rest.PaymentHandler
 }
 
 func (c *RouteConfig) Setup() {
@@ -33,7 +34,7 @@ func (c *RouteConfig) ServeRoute() {
 	c.AuthRoute(v1)
 	c.UserRoute(v1)
 	c.EventRoute(v1)
-
+	c.PaymentRoute(v1)
 }
 
 func (c *RouteConfig) AuthRoute(r *gin.RouterGroup) {
@@ -56,4 +57,10 @@ func (c *RouteConfig) EventRoute(r *gin.RouterGroup) {
 	eventEnds.Use(middleware.JwtUser())
 	eventEnds.POST("/", middleware.OrganizerRole(), c.EventHandler.PostEvent)
 	eventEnds.GET("/", c.EventHandler.GetEvent)
+}
+
+func (c *RouteConfig) PaymentRoute(r *gin.RouterGroup) {
+	paymentEnds := r.Group("/payment")
+	paymentEnds.POST("/checkout", middleware.JwtUser(), middleware.UserOnly(), c.PaymentHandler.Checkout)
+	paymentEnds.POST("/verify", c.PaymentHandler.Verify)
 }

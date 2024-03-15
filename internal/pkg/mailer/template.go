@@ -215,3 +215,94 @@ const otp_email = `<!DOCTYPE html>
   </body>
 </html>
 `
+
+const send_notification = `<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Event Notification</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+        }
+        .container {
+            max-width: 600px;
+            margin: 20px auto;
+            background-color: #fff;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+        .header {
+            background-color: #007bff;
+            color: #fff;
+            padding: 20px;
+            border-radius: 10px 10px 0 0;
+            text-align: center;
+        }
+        .content {
+            padding: 20px;
+        }
+        .event-details {
+            margin-bottom: 20px;
+            border-bottom: 1px solid #ddd;
+            padding-bottom: 20px;
+        }
+        .event-details h2 {
+            margin-top: 0;
+            color: #007bff;
+            font-size: 20px;
+        }
+        .event-details p {
+            margin: 5px 0;
+        }
+        .cta-button {
+            display: block;
+            width: 200px;
+            margin: 20px auto;
+            padding: 10px;
+            background-color: #007bff;
+            color: #fff;
+            text-decoration: none;
+            text-align: center;
+            border-radius: 5px;
+        }
+        .cta-button:hover {
+            background-color: #0056b3;
+        }
+        .footer {
+            background-color: #f8f9fa;
+            padding: 20px;
+            text-align: center;
+            border-top: 1px solid #ddd;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Event Notification</h1>
+        </div>
+        <div class="content">
+            <div class="event-details">
+                <h2>Upcoming Event: {{.event-title}} </h2>
+                <p><strong>User's Name:</strong> {{.name}} </p>
+                <p><strong>Date & Time:</strong> {{.event-start}} </p>
+                <p><strong>Venue:</strong> {{.venue}} </p>
+            </div>
+            <p>Hi {{.name}},</p>
+            <p>This is to notify you that the event for which you have purchased tickets is about to begin. Please arrive on time to enjoy the event.</p>
+            <p>Thank you for your participation!</p>
+        </div>
+        <div class="footer">
+            <p>Regards,<br>Brawijaya Educational Event Center Team</p>
+        </div>
+    </div>
+</body>
+</html>
+
+`

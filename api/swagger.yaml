@@ -39,6 +39,11 @@ tags:
     externalDocs:
       description: Find out more
       url: http://swagger.io
+  - name: Payment
+    description: Its a group for Payment Endpoints
+    externalDocs:
+      description: Find out more
+      url: http://swagger.io
 
 paths:
   /auth/register:
@@ -554,25 +559,28 @@ paths:
                     properties:
                       id:
                         type: string
-                      email:
+                        format: uuid
+                      title:
                         type: string
-                        example: emailmu@gmail.com
-                      full_name:
+                      description:
                         type: string
-                      nim_nik:
+                      speakers:
+                        type: array
+                        items: {}
+                      speaker_roles:
+                        type: array
+                        items: {}
+                      place:
                         type: string
-                      prodi:
+                      date:
                         type: string
-                      universitas:
+                        format: date-time
+                      start_at:
                         type: string
-                      id_url:
+                        format: date-time
+                      organize_by:
                         type: string
-                      is_email_verified:
-                        type: boolean
-                        example: true
-                      is_profile_verified:
-                        type: boolean
-                        example: true
+                        format: uuid
         "400":
           description: Invalid Request data
           content:
@@ -591,6 +599,75 @@ paths:
                     example:
         "500":
           description: Internal server error
+  /payment/checkout:
+    post:
+      tags:
+        - Payment
+      summary: Its use for user checkout the ticket. Provided just for normal user.
+      operationId: checkoutTicket
+      security:
+        - bearerAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                event_id:
+                  type: string
+                  format: uuid
+        required: true
+      responses:
+        "200":
+          description: Successfully create payment method
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: boolean
+                    example: false
+                  message:
+                    type: string
+                    example: "Successfully create payment method"
+                  data:
+                    type: object
+                    properties:
+                      snap_url:
+                        type: string
+                        example: "https://app.sandbox.midtrans.com/snap/v3/redirection/cd38bdba-7c78-43d6-88b1-4ed01dee5dba"
+                      token:
+                        type: string
+                        example: "cd38bdba-7c78-43d6-88b1-4ed01dee5dba"
+        "400":
+          description: Invalid Request data
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: Bad request, data provided is invalid
+                  data:
+                    type: object
+                    example:
+        "500":
+          description: Internal server error
+
+  /payment/verify:
+    post:
+      tags:
+        - Payment
+      summary: This endpoint is used by midtrans to send notification payment.
+      operationId: paymentNotification
+      responses:
+        "200":
+          description: Payment success
 
 components:
   securitySchemes:
