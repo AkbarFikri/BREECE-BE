@@ -14,10 +14,12 @@ import (
 )
 
 type EventRepository interface {
+	FindById(id string) (entity.Event, error)
 	FindAllPublic(page int) ([]entity.Event, error)
 	FindWithFilter(params model.FilterParam) ([]entity.Event, error)
 	FindForBooking(id string) (entity.Event, error)
 	Update(event entity.Event) error
+	UpdateFailurePayment(id string) error
 	Insert(event entity.Event) error
 }
 
@@ -29,6 +31,15 @@ func NewEventRepository(db *gorm.DB) EventRepository {
 	return &eventRepository{
 		db: db,
 	}
+}
+
+// FindById implements EventRepository.
+func (r *eventRepository) FindById(id string) (entity.Event, error) {
+	var event entity.Event
+	if err := r.db.Where("id = ?", id).First(&event).Error; err != nil {
+		return event, err
+	}
+	return event, nil
 }
 
 // FindAllPublic implements EventRepository.
@@ -145,6 +156,31 @@ func (r *eventRepository) Insert(event entity.Event) error {
 	if err := r.db.Create(&event).Error; err != nil {
 		return err
 	}
+	return nil
+}
+
+func (r *eventRepository) UpdateFailurePayment(id string) error {
+	var event entity.Event
+
+	tx := r.db.Begin()
+
+	if err := tx.Clauses(clause.Locking{Strength: "UPDATE"}).Where("id = ?", id).First(&event).Error; err != nil {
+		tx.Rollback()
+		return err
+	}
+
+	event.TicketQty = event.TicketQty + 1
+
+	if err := tx.Save(&event).Error; err != nil {
+		tx.Rollback()
+		return err
+	}
+
+	if err := tx.Commit().Error; err != nil {
+		tx.Rollback()
+		return err
+	}
+
 	return nil
 }
 

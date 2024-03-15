@@ -34,7 +34,7 @@ func (c *RouteConfig) ServeRoute() {
 	c.AuthRoute(v1)
 	c.UserRoute(v1)
 	c.EventRoute(v1)
-
+	c.PaymentRoute(v1)
 }
 
 func (c *RouteConfig) AuthRoute(r *gin.RouterGroup) {
@@ -56,6 +56,11 @@ func (c *RouteConfig) EventRoute(r *gin.RouterGroup) {
 	eventEnds := r.Group("/event")
 	eventEnds.Use(middleware.JwtUser())
 	eventEnds.POST("/", middleware.OrganizerRole(), c.EventHandler.PostEvent)
-	eventEnds.POST("/checkout", middleware.UserOnly(), c.PaymentHandler.Checkout)
 	eventEnds.GET("/", c.EventHandler.GetEvent)
+}
+
+func (c *RouteConfig) PaymentRoute(r *gin.RouterGroup) {
+	paymentEnds := r.Group("/payment")
+	paymentEnds.POST("/checkout", middleware.JwtUser(), middleware.UserOnly(), c.PaymentHandler.Checkout)
+	paymentEnds.POST("/verify", c.PaymentHandler.Verify)
 }

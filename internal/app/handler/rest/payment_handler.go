@@ -8,16 +8,17 @@ import (
 	"github.com/AkbarFikri/BREECE-BE/internal/app/service"
 	"github.com/AkbarFikri/BREECE-BE/internal/pkg/helper"
 	"github.com/AkbarFikri/BREECE-BE/internal/pkg/model"
-
 )
 
 type PaymentHandler struct {
-	PaymentService service.PaymentService
+	paymentService service.PaymentService
+	ticketService  service.TicketService
 }
 
-func NewPaymentHandler(ps service.PaymentService) PaymentHandler {
+func NewPaymentHandler(ps service.PaymentService, ts service.TicketService) PaymentHandler {
 	return PaymentHandler{
-		PaymentService: ps,
+		paymentService: ps,
+		ticketService:  ts,
 	}
 }
 
@@ -35,15 +36,31 @@ func (h *PaymentHandler) Checkout(ctx *gin.Context) {
 		return
 	}
 
-	// ctx.JSON(200, gin.H{
-	// 	"user": user,
-	// 	"data": req,
-	// })
-
-	res, err := h.PaymentService.GenerateUrlAndToken(user, req)
+	res, err := h.paymentService.GenerateUrlAndToken(user, req)
 	if err != nil {
 		helper.ErrorResponse(ctx, res)
 	}
 
 	helper.SuccessResponse(ctx, res)
+}
+
+func (h *PaymentHandler) Verify(ctx *gin.Context) {
+	var notificationPayload map[string]interface{}
+
+	err := ctx.ShouldBind(&notificationPayload)
+	if err != nil {
+		return
+	}
+
+	orderId, exists := notificationPayload["order_id"].(string)
+	if !exists {
+		return
+	}
+
+	success := h.paymentService.VerifyPayment(orderId)
+	if !success {
+		h.ticketService.FailurePayment(orderId)
+	}
+
+	h.ticketService.ConfirmedPayment(orderId)
 }

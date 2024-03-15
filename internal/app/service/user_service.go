@@ -28,16 +28,18 @@ type UserService interface {
 type userService struct {
 	UserRepository  repository.UserRepository
 	CacheRepository repository.CacheRepository
+	EmailService    mailer.EmailService
 	SupabaseBucket  *supabasestorageuploader.Client
 }
 
 func NewUserService(ur repository.UserRepository,
 	cr repository.CacheRepository,
-	sb *supabasestorageuploader.Client) UserService {
+	sb *supabasestorageuploader.Client, mail mailer.EmailService) UserService {
 	return &userService{
 		UserRepository:  ur,
 		CacheRepository: cr,
 		SupabaseBucket:  sb,
+		EmailService:    mail,
 	}
 }
 
@@ -82,7 +84,14 @@ func (s *userService) Register(req model.CreateUserRequest) (model.ServiceRespon
 	referenceID := helper.GenerateRandomString(16)
 	OTP := helper.GenerateRandomInt(4)
 
-	go mailer.Send(user.Email, "Your OTP Verification", string(OTP), user.FullName)
+	email := model.EmailOTP{
+		Email:   user.Email,
+		Subject: "Your OTP Verification",
+		Otp:     string(OTP),
+		Name:    user.FullName,
+	}
+
+	go s.EmailService.SendOTP(email)
 
 	s.CacheRepository.Set("otp:"+referenceID, []byte(OTP))
 	s.CacheRepository.Set("user-ref:"+referenceID, []byte(user.ID))
