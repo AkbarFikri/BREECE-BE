@@ -4,14 +4,15 @@ import (
 	"gorm.io/gorm"
 
 	"github.com/AkbarFikri/BREECE-BE/internal/app/entity"
-
 )
 
 type UserRepository interface {
 	FindById(id string) (entity.User, error)
 	FindByEmail(email string) (entity.User, error)
+	FindAllOrganizer() ([]entity.User, error)
 	Insert(user entity.User) error
 	Update(user entity.User) error
+	Delete(user entity.User) error
 }
 
 type userRepository struct {
@@ -53,6 +54,23 @@ func (r *userRepository) Insert(user entity.User) error {
 // Update implements UserRepository.
 func (r *userRepository) Update(user entity.User) error {
 	if err := r.db.Where("id = ?", user.ID).Save(&user).Error; err != nil {
+		return err
+	}
+	return nil
+}
+
+// FindAllOrganizer implements UserRepository.
+func (r *userRepository) FindAllOrganizer() ([]entity.User, error) {
+	var users []entity.User
+	if err := r.db.Where("is_organizer = ?", true).Find(&users).Error; err != nil {
+		return users, err
+	}
+
+	return users, nil
+}
+
+func (r *userRepository) Delete(user entity.User) error {
+	if err := r.db.Where("id = ?", user.ID).Delete(&user).Error; err != nil {
 		return err
 	}
 	return nil

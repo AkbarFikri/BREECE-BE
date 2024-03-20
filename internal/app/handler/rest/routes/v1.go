@@ -7,7 +7,6 @@ import (
 
 	"github.com/AkbarFikri/BREECE-BE/internal/app/handler/rest"
 	"github.com/AkbarFikri/BREECE-BE/internal/app/handler/rest/middleware"
-
 )
 
 type RouteConfig struct {
@@ -16,6 +15,7 @@ type RouteConfig struct {
 	AuthHandler    rest.AuthHandler
 	EventHandler   rest.EventHandler
 	PaymentHandler rest.PaymentHandler
+	AdminHandler   rest.AdminHandler
 }
 
 func (c *RouteConfig) Setup() {
@@ -69,4 +69,13 @@ func (c *RouteConfig) PaymentRoute(r *gin.RouterGroup) {
 	paymentEnds := r.Group("/payment")
 	paymentEnds.POST("/checkout", middleware.JwtUser(), middleware.UserOnly(), c.PaymentHandler.Checkout)
 	paymentEnds.POST("/verify", c.PaymentHandler.Verify)
+}
+
+func (c *RouteConfig) AdminRoute(r *gin.RouterGroup) {
+	adminEnds := r.Group("/admin")
+	adminEnds.Use(middleware.JwtUser())
+	adminEnds.Use(middleware.AdminRole())
+	adminEnds.GET("/organizer", c.AdminHandler.GetOrganizer)
+	adminEnds.GET("/organizer/:id", c.AdminHandler.GetOrganizer)
+	adminEnds.PATCH("/organizer/verify", c.AdminHandler.VerifyOrganizer)
 }

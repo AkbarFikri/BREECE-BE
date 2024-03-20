@@ -70,3 +70,8 @@ type UserTokenData struct {
 	IsOrganizer       bool
 	IsBrawijaya       bool
 }
+
+type OrganizerVerifyRequest struct {
+	ID     string `json:"id"`
+	Verify bool   `json:"verify"`
+}

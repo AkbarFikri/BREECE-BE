@@ -35,12 +35,14 @@ func StartUp(config *StartUpConfig) {
 	eventService := service.NewEventService(eventRepository, supabase)
 	paymentService := service.NewPaymentService(invoiceRepository, eventRepository)
 	ticketService := service.NewTicketService(eventRepository, invoiceRepository, ticketRepository, userRepository, mailer)
+	adminService := service.NewAdminService(userRepository)
 
 	// Handler
 	authHandler := rest.NewAuthHandler(userService)
 	userHandler := rest.NewUserHandler(userService)
 	eventHandler := rest.NewEventHandler(eventService)
 	paymentHandler := rest.NewPaymentHandler(paymentService, ticketService)
+	adminHandler := rest.NewAdminHandler(adminService)
 
 	routeSetting := routes.RouteConfig{
 		App:            config.App,
@@ -48,6 +50,7 @@ func StartUp(config *StartUpConfig) {
 		UserHandler:    userHandler,
 		EventHandler:   eventHandler,
 		PaymentHandler: paymentHandler,
+		AdminHandler:   adminHandler,
 	}
 	routeSetting.Setup()
 }
