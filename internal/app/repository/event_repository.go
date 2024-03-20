@@ -10,7 +10,6 @@ import (
 
 	"github.com/AkbarFikri/BREECE-BE/internal/app/entity"
 	"github.com/AkbarFikri/BREECE-BE/internal/pkg/model"
-
 )
 
 type EventRepository interface {
@@ -86,7 +85,6 @@ func (r *eventRepository) FindWithFilter(params model.FilterParam) ([]entity.Eve
 		} else {
 			sql = fmt.Sprintf("%s WHERE CAST(date as DATE) = '%s'", sql, params.Date)
 		}
-
 	}
 
 	if params.IsPublic {
@@ -126,11 +124,13 @@ func (r *eventRepository) FindForBooking(id string) (entity.Event, error) {
 	var event entity.Event
 	tx := r.db.Begin()
 
+	//TODO ???
 	if err := tx.Clauses(clause.Locking{Strength: "UPDATE"}).Where("id = ?", id).First(&event).Error; err != nil {
 		tx.Rollback()
 		return event, err
 	}
 
+	// TODO Perbaikin Logic tidak pada tempatnya...
 	if event.TicketQty == 0 {
 		tx.Rollback()
 		return event, errors.New("ticket is sold out")

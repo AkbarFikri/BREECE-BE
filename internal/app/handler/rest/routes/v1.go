@@ -7,6 +7,7 @@ import (
 
 	"github.com/AkbarFikri/BREECE-BE/internal/app/handler/rest"
 	"github.com/AkbarFikri/BREECE-BE/internal/app/handler/rest/middleware"
+
 )
 
 type RouteConfig struct {
@@ -40,8 +41,9 @@ func (c *RouteConfig) ServeRoute() {
 func (c *RouteConfig) AuthRoute(r *gin.RouterGroup) {
 	authEnds := r.Group("/auth")
 	authEnds.GET("/check", c.AuthHandler.HealthCheck)
-	authEnds.POST("/register", c.AuthHandler.Register)
-	authEnds.POST("/login", c.AuthHandler.Login)
+	authEnds.POST("/register", c.AuthHandler.RegisterUser)
+	authEnds.POST("/register/organizer", c.AuthHandler.RegisterOrganizer)
+	authEnds.POST("/login", c.AuthHandler.LoginUser)
 	authEnds.POST("/otp", c.AuthHandler.VerifyOTP)
 	authEnds.POST("/profile", c.AuthHandler.VerifyProfile)
 }
@@ -57,6 +59,7 @@ func (c *RouteConfig) EventRoute(r *gin.RouterGroup) {
 	eventEnds.Use(middleware.JwtUser())
 	eventEnds.POST("/", middleware.OrganizerRole(), c.EventHandler.PostEvent)
 	eventEnds.GET("/", c.EventHandler.GetEvent)
+	eventEnds.GET("/:id", c.EventHandler.GetEventDetails)
 }
 
 func (c *RouteConfig) PaymentRoute(r *gin.RouterGroup) {

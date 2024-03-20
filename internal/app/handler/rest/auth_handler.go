@@ -24,7 +24,7 @@ func (h *AuthHandler) HealthCheck(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, gin.H{"Status": "Ready To Code!"})
 }
 
-func (h *AuthHandler) Register(ctx *gin.Context) {
+func (h *AuthHandler) RegisterUser(ctx *gin.Context) {
 	var req model.CreateUserRequest
 
 	if err := ctx.ShouldBindJSON(&req); err != nil {
@@ -37,6 +37,8 @@ func (h *AuthHandler) Register(ctx *gin.Context) {
 		return
 	}
 
+	req.IsOrganizer = false
+
 	res, err := h.userService.Register(req)
 	if err != nil {
 		helper.ErrorResponse(ctx, res)
@@ -46,7 +48,31 @@ func (h *AuthHandler) Register(ctx *gin.Context) {
 	helper.SuccessResponse(ctx, res)
 }
 
-func (h *AuthHandler) Login(ctx *gin.Context) {
+func (h *AuthHandler) RegisterOrganizer(ctx *gin.Context) {
+	var req model.CreateUserRequest
+
+	if err := ctx.ShouldBindJSON(&req); err != nil {
+		helper.ErrorResponse(ctx, model.ServiceResponse{
+			Code:    http.StatusBadRequest,
+			Error:   true,
+			Message: "Bad request, data provided is invalid",
+			Data:    nil,
+		})
+		return
+	}
+
+	req.IsOrganizer = true
+
+	res, err := h.userService.Register(req)
+	if err != nil {
+		helper.ErrorResponse(ctx, res)
+		return
+	}
+
+	helper.SuccessResponse(ctx, res)
+}
+
+func (h *AuthHandler) LoginUser(ctx *gin.Context) {
 	var req model.LoginUserRequest
 
 	if err := ctx.ShouldBindJSON(&req); err != nil {
@@ -59,7 +85,30 @@ func (h *AuthHandler) Login(ctx *gin.Context) {
 		return
 	}
 
-	res, err := h.userService.Login(req)
+	res, err := h.userService.LoginUser(req)
+	if err != nil {
+		helper.ErrorResponse(ctx, res)
+		return
+	}
+
+	helper.SuccessResponse(ctx, res)
+
+}
+
+func (h *AuthHandler) LoginOrganizer(ctx *gin.Context) {
+	var req model.LoginUserRequest
+
+	if err := ctx.ShouldBindJSON(&req); err != nil {
+		helper.ErrorResponse(ctx, model.ServiceResponse{
+			Code:    http.StatusBadRequest,
+			Error:   true,
+			Message: "Bad request, data provided is invalid",
+			Data:    nil,
+		})
+		return
+	}
+
+	res, err := h.userService.LoginOrganizer(req)
 	if err != nil {
 		helper.ErrorResponse(ctx, res)
 		return

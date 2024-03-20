@@ -13,7 +13,6 @@ import (
 	"github.com/AkbarFikri/BREECE-BE/internal/app/entity"
 	"github.com/AkbarFikri/BREECE-BE/internal/app/repository"
 	"github.com/AkbarFikri/BREECE-BE/internal/pkg/model"
-
 )
 
 type PaymentService interface {
@@ -42,12 +41,14 @@ func NewPaymentService(ir repository.InvoiceRepository, er repository.EventRepos
 // GenerateUrlAndToken implements PaymentService.
 func (s *paymentService) GenerateUrlAndToken(user model.UserTokenData, req model.PaymentRequest) (model.ServiceResponse, error) {
 	event, err := s.EventRepository.FindForBooking(req.EventID)
+
+	// TODO Perbaiki !!!!
 	if err != nil {
 		if err.Error() == "ticket is sold out" {
 			return model.ServiceResponse{
 				Code:    http.StatusUnprocessableEntity,
 				Error:   true,
-				Message: "Ticket is sold out.",
+				Message: "Ticket is sold out",
 			}, err
 		} else {
 			return model.ServiceResponse{
@@ -70,7 +71,8 @@ func (s *paymentService) GenerateUrlAndToken(user model.UserTokenData, req model
 	var snapResp *snap.Response
 
 	if event.Price == 0 {
-		invoice.Snap = "Success"
+		invoice.Snap = "success"
+		invoice.Status = "success"
 	} else {
 		payReq := &snap.Request{
 			TransactionDetails: midtrans.TransactionDetails{
@@ -122,20 +124,14 @@ func (s *paymentService) VerifyPayment(orderId string) bool {
 		if transactionStatusResp != nil {
 			if transactionStatusResp.TransactionStatus == "capture" {
 				if transactionStatusResp.FraudStatus == "challenge" {
-					// TODO set transaction status on your database to 'challenge'
-					// e.g: 'Payment status challenged. Please take action on your Merchant Administration Portal
+					return false
 				} else if transactionStatusResp.FraudStatus == "accept" {
-					// TODO set transaction status on your database to 'success'
+					return true
 				}
 			} else if transactionStatusResp.TransactionStatus == "settlement" {
 				return true
-			} else if transactionStatusResp.TransactionStatus == "deny" {
-				// TODO you can ignore 'deny', because most of the time it allows payment retries
-				// and later can become success
 			} else if transactionStatusResp.TransactionStatus == "cancel" || transactionStatusResp.TransactionStatus == "expire" {
 				return false
-			} else if transactionStatusResp.TransactionStatus == "pending" {
-				// TODO set transaction status on your databaase to 'pending' / waiting payment
 			}
 		}
 	}

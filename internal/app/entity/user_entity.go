@@ -16,7 +16,7 @@ type User struct {
 	IsAdmin           bool      `gorm:"not null"`
 	IsOrganizer       bool      `gorm:"not null"`
 	IsBrawijaya       bool      `gorm:"not null;default:false"`
-	ID_Url            string    `gorm:"not null"`
+	IDUrl             string    `gorm:"not null"`
 	Invoices          []Invoice `gorm:"foreignKey:UserID"`
 	Events            []Event   `gorm:"foreignKey:OrganizeBy"`
 	Ticekts           []Ticket  `gorm:"foreignKey:UserID"`

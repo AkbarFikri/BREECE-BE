@@ -11,7 +11,6 @@ import (
 	"github.com/AkbarFikri/BREECE-BE/internal/pkg/gocron"
 	"github.com/AkbarFikri/BREECE-BE/internal/pkg/mailer"
 	"github.com/AkbarFikri/BREECE-BE/internal/pkg/model"
-
 )
 
 type TicketService interface {
@@ -62,6 +61,7 @@ func (s *ticketService) ConfirmedPayment(invoiceId string) error {
 		return err
 	}
 
+	// TODO Hindari compare string langsung.
 	if event.Tempat == "Online" {
 		event.Tempat = event.Link
 	}

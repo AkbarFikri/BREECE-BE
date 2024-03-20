@@ -11,11 +11,13 @@ import (
 	"github.com/AkbarFikri/BREECE-BE/internal/app/entity"
 	"github.com/AkbarFikri/BREECE-BE/internal/app/repository"
 	"github.com/AkbarFikri/BREECE-BE/internal/pkg/model"
+
 )
 
 type EventService interface {
 	PostEvent(user model.UserTokenData, req model.EventRequest) (model.ServiceResponse, error)
 	FetchEvent(user model.UserTokenData, params model.FilterParam) (model.ServiceResponse, error)
+	FetchEventDetails(id string) (model.ServiceResponse, error)
 }
 
 type eventService struct {
@@ -37,7 +39,7 @@ func (s *eventService) PostEvent(user model.UserTokenData, req model.EventReques
 			Code:    http.StatusBadRequest,
 			Error:   true,
 			Message: "Invalid time format for field date",
-		}, nil
+		}, err
 	}
 
 	startAt, err := time.Parse("2006-01-02 15:04:05 -0700 MST", req.StartAt)
@@ -46,7 +48,7 @@ func (s *eventService) PostEvent(user model.UserTokenData, req model.EventReques
 			Code:    http.StatusBadRequest,
 			Error:   true,
 			Message: "Invalid time format for field start_at",
-		}, nil
+		}, err
 	}
 
 	datenow, _ := time.Parse("2006-01-02 15:04:05 -0700 MST", time.Now().UTC().Format("2006-01-02")+" 00:00:00 +0000 UTC")
@@ -56,7 +58,7 @@ func (s *eventService) PostEvent(user model.UserTokenData, req model.EventReques
 			Code:    http.StatusForbidden,
 			Error:   true,
 			Message: "Invalid time request, the event holding time cannot be less than the current time",
-		}, nil
+		}, err
 	}
 
 	event := entity.Event{
@@ -87,7 +89,7 @@ func (s *eventService) PostEvent(user model.UserTokenData, req model.EventReques
 				Code:    http.StatusInternalServerError,
 				Error:   true,
 				Message: "Failed to upload banner to bucket",
-			}, nil
+			}, err
 		}
 		event.BannerUrl = bannerUrl
 	}
@@ -97,7 +99,7 @@ func (s *eventService) PostEvent(user model.UserTokenData, req model.EventReques
 			Code:    http.StatusInternalServerError,
 			Error:   true,
 			Message: "Something went frong, failed to create event.",
-		}, nil
+		}, err
 	}
 
 	res := model.EventResponse{
@@ -153,6 +155,7 @@ func (s *eventService) FetchEvent(user model.UserTokenData, params model.FilterP
 		}, err
 	}
 
+	// TODO Errornya perbaiki!
 	if len(events) == 0 {
 		return model.ServiceResponse{
 			Code:    http.StatusNotFound,
@@ -166,5 +169,23 @@ func (s *eventService) FetchEvent(user model.UserTokenData, params model.FilterP
 		Error:   false,
 		Message: "Successfully find all events",
 		Data:    events,
+	}, nil
+}
+
+func (s *eventService) FetchEventDetails(id string) (model.ServiceResponse, error) {
+	event, err := s.EventRepository.FindById(id)
+	if err != nil {
+		return model.ServiceResponse{
+			Code: http.StatusNotFound,
+			Error: true,
+			Message: "Event with id provided is not found",
+		}, err
+	}
+
+	return model.ServiceResponse{
+		Code: http.StatusOK,
+		Error: false,
+		Message: "Successfully found event",
+		Data: event,
 	}, nil
 }
