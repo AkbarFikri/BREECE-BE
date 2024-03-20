@@ -9,7 +9,7 @@ type CreateUserRequest struct {
 	Email       string `json:"email" binding:"required,email"`
 	Password    string `json:"password" binding:"required,min=8"`
 	FullName    string `json:"full_name" binding:"required"`
-	IsOrganizer bool
+	IsOrganizer bool   `json:"-"`
 	// Nim         uint64 `json:"nim" binding:"required"`
 	// Name        string `json:"name" binding:"required"`
 	// Prodi       string `json:"prodi" binding:"required"`

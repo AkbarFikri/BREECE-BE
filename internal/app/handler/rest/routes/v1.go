@@ -43,7 +43,10 @@ func (c *RouteConfig) AuthRoute(r *gin.RouterGroup) {
 	authEnds.GET("/check", c.AuthHandler.HealthCheck)
 	authEnds.POST("/register", c.AuthHandler.RegisterUser)
 	authEnds.POST("/register/organizer", c.AuthHandler.RegisterOrganizer)
+	authEnds.POST("/register/admin", middleware.APIKEY(), c.AuthHandler.RegisterAdmin)
 	authEnds.POST("/login", c.AuthHandler.LoginUser)
+	authEnds.POST("/login/organizer", c.AuthHandler.LoginOrganizer)
+	authEnds.POST("/login/admin", c.AuthHandler.LoginAdmin)
 	authEnds.POST("/otp", c.AuthHandler.VerifyOTP)
 	authEnds.POST("/profile", c.AuthHandler.VerifyProfile)
 }

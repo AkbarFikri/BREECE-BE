@@ -72,6 +72,28 @@ func (h *AuthHandler) RegisterOrganizer(ctx *gin.Context) {
 	helper.SuccessResponse(ctx, res)
 }
 
+func (h *AuthHandler) RegisterAdmin(ctx *gin.Context) {
+	var req model.CreateUserRequest
+
+	if err := ctx.ShouldBindJSON(&req); err != nil {
+		helper.ErrorResponse(ctx, model.ServiceResponse{
+			Code:    http.StatusBadRequest,
+			Error:   true,
+			Message: "Bad request, data provided is invalid",
+			Data:    nil,
+		})
+		return
+	}
+
+	res, err := h.userService.RegisterAdmin(req)
+	if err != nil {
+		helper.ErrorResponse(ctx, res)
+		return
+	}
+
+	helper.SuccessResponse(ctx, res)
+}
+
 func (h *AuthHandler) LoginUser(ctx *gin.Context) {
 	var req model.LoginUserRequest
 
@@ -116,6 +138,28 @@ func (h *AuthHandler) LoginOrganizer(ctx *gin.Context) {
 
 	helper.SuccessResponse(ctx, res)
 
+}
+
+func (h *AuthHandler) LoginAdmin(ctx *gin.Context) {
+	var req model.LoginUserRequest
+
+	if err := ctx.ShouldBindJSON(&req); err != nil {
+		helper.ErrorResponse(ctx, model.ServiceResponse{
+			Code:    http.StatusBadRequest,
+			Error:   true,
+			Message: "Bad request, data provided is invalid",
+			Data:    nil,
+		})
+		return
+	}
+
+	res, err := h.userService.LoginAdmin(req)
+	if err != nil {
+		helper.ErrorResponse(ctx, res)
+		return
+	}
+
+	helper.SuccessResponse(ctx, res)
 }
 
 func (h *AuthHandler) VerifyOTP(ctx *gin.Context) {

@@ -19,8 +19,10 @@ import (
 
 type UserService interface {
 	Register(req model.CreateUserRequest) (model.ServiceResponse, error)
+	RegisterAdmin(req model.CreateUserRequest) (model.ServiceResponse, error)
 	LoginUser(req model.LoginUserRequest) (model.ServiceResponse, error)
 	LoginOrganizer(req model.LoginUserRequest) (model.ServiceResponse, error)
+	LoginAdmin(req model.LoginUserRequest) (model.ServiceResponse, error)
 	VerifyOTP(req model.OtpUserRequest) (model.ServiceResponse, error)
 	VerifyProfile(req model.ProfileUserRequest) (model.ServiceResponse, error)
 	UserCurrent(req model.UserTokenData) (model.ServiceResponse, error)
@@ -115,6 +117,59 @@ func (s *userService) Register(req model.CreateUserRequest) (model.ServiceRespon
 	}, nil
 }
 
+func (s *userService) RegisterAdmin(req model.CreateUserRequest) (model.ServiceResponse, error) {
+	_, err := s.UserRepository.FindByEmail(req.Email)
+	if err == nil {
+		return model.ServiceResponse{
+			Code:    http.StatusBadRequest,
+			Error:   true,
+			Message: "Email already used",
+			Data:    nil,
+		}, err
+	}
+
+	hashPass, err := helper.HashPassword(req.Password)
+	if err != nil {
+		return model.ServiceResponse{
+			Code:    http.StatusInternalServerError,
+			Error:   true,
+			Message: "Something went wrong",
+			Data:    err.Error(),
+		}, err
+	}
+
+	user := entity.User{
+		ID:                uuid.New().String(),
+		Email:             req.Email,
+		Password:          hashPass,
+		FullName:          req.FullName,
+		IsAdmin:           true,
+		IsProfileVerified: true,
+	}
+
+	if err := s.UserRepository.Insert(user); err != nil {
+		return model.ServiceResponse{
+			Code:    http.StatusInternalServerError,
+			Error:   true,
+			Message: "Something went wrong, failed to create user",
+			Data:    err.Error(),
+		}, err
+	}
+
+	res := model.CreateUserResponse{
+		ID:       user.ID,
+		Email:    user.Email,
+		FullName: user.FullName,
+	}
+
+	return model.ServiceResponse{
+		Code:    http.StatusOK,
+		Error:   false,
+		Message: "Successfully register admin",
+		Data:    res,
+	}, nil
+}
+
 func (s *userService) LoginUser(req model.LoginUserRequest) (model.ServiceResponse, error) {
 	user, err := s.UserRepository.FindByEmail(req.Email)
 	if err != nil {
@@ -185,7 +240,66 @@ func (s *userService) LoginOrganizer(req model.LoginUserRequest) (model.ServiceR
 		}, err
 	}
 
-	if !user.IsProfileVerified {
+	if !user.IsProfileVerified || !user.IsOrganizer || user.IsAdmin {
+		return model.ServiceResponse{
+			Code:    http.StatusBadRequest,
+			Error:   true,
+			Message: "Invalid Email or Password",
+			Data:    err.Error(),
+		}, err
+	}
+
+	if err := helper.ComparePassword(user.Password, req.Password); err != nil {
+		return model.ServiceResponse{
+			Code:    http.StatusBadRequest,
+			Error:   true,
+			Message: "Invalid Email or Password",
+			Data:    nil,
+		}, err
+	}
+
+	accessData := map[string]interface{}{
+		"id":                user.ID,
+		"email":             user.Email,
+		"isAdmin":           user.IsAdmin,
+		"isEmailVerified":   user.IsEmailVerified,
+		"isProfileVerified": user.IsProfileVerified,
+		"isOrganizer":       user.IsOrganizer,
+		"isBrawijaya":       user.IsBrawijaya,
+	}
+	accessToken, err := helper.SignJWT(accessData, 24)
+	if err != nil {
+		return model.ServiceResponse{
+			Code:    http.StatusInternalServerError,
+			Error:   true,
+			Message: "Something went wrong",
+			Data:    nil,
+		}, err
+	}
+
+	return model.ServiceResponse{
+		Code:    http.StatusOK,
+		Error:   false,
+		Message: "Successfully login",
+		Data: gin.H{
+			"token":     accessToken,
+			"expire_at": time.Now().Add(24 * time.Hour).UTC(),
+		},
+	}, nil
+}
+
+func (s *userService) LoginAdmin(req model.LoginUserRequest) (model.ServiceResponse, error) {
+	user, err := s.UserRepository.FindByEmail(req.Email)
+	if err != nil {
+		return model.ServiceResponse{
+			Code:    http.StatusBadRequest,
+			Error:   true,
+			Message: "Invalid Email or Password",
+			Data:    err.Error(),
+		}, err
+	}
+
+	if user.IsOrganizer || !user.IsAdmin {
 		return model.ServiceResponse{
 			Code:    http.StatusBadRequest,
 			Error:   true,
