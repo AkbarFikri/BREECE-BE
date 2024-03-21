@@ -2,9 +2,13 @@ package service
 
 import (
 	"net/http"
+	"time"
 
 	"github.com/AkbarFikri/BREECE-BE/internal/app/repository"
+	"github.com/AkbarFikri/BREECE-BE/internal/pkg/gocron"
+	"github.com/AkbarFikri/BREECE-BE/internal/pkg/mailer"
 	"github.com/AkbarFikri/BREECE-BE/internal/pkg/model"
+
 )
 
 type AdminService interface {
@@ -16,11 +20,13 @@ type AdminService interface {
 
 type adminService struct {
 	UserRepository repository.UserRepository
+	Mailer         mailer.EmailService
 }
 
-func NewAdminService(ur repository.UserRepository) AdminService {
+func NewAdminService(ur repository.UserRepository, mailer mailer.EmailService) AdminService {
 	return &adminService{
 		UserRepository: ur,
+		Mailer:         mailer,
 	}
 }
 
@@ -120,8 +126,15 @@ func (s *adminService) VerifyOrganizer(req model.OrganizerVerifyRequest) (model.
 
 	user.IsProfileVerified = req.Verify
 
+	email := model.EmailApproval{
+		Subject: "Account Approval Status",
+		Email:   user.Email,
+		Name:    user.FullName,
+	}
+
 	if req.Verify {
-		// TODO Schedule to send email notification that user successfully created
+		email.Status = "Approved"
+		go s.Mailer.SendApprovalStatus(email)
 		if err := s.UserRepository.Update(user); err != nil {
 			return model.ServiceResponse{
 				Code:    http.StatusInternalServerError,
@@ -130,8 +143,9 @@ func (s *adminService) VerifyOrganizer(req model.OrganizerVerifyRequest) (model.
 			}, err
 		}
 	} else {
-		// TODO Schedule to send email notification that user is not eligible
-		// TODO Schedule delete user
+		email.Status = "Denied"
+		go s.Mailer.SendApprovalStatus(email)
+		go gocron.ScheduleDeleteOrganizerDenied(time.Now().Add(48 * time.Hour), s.UserRepository, user)
 	}
 
 	res := model.ProfileUserResponse{

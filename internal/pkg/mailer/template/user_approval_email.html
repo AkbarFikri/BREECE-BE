@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Notification Email</title>
+    <style>
+      /* Reset CSS */
+      body,
+      html {
+        margin: 0;
+        padding: 0;
+        font-family: Arial, sans-serif;
+        font-size: 16px;
+        line-height: 1.6;
+      }
+
+      .container {
+        max-width: 600px;
+        margin: 20px auto;
+        padding: 20px;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+        background-color: #f9f9f9;
+      }
+
+      h2 {
+        color: #333;
+      }
+
+      p {
+        margin: 10px 0;
+      }
+
+      .approval-status {
+        font-weight: bold;
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="container">
+      <h2>Notification: Account Approval Status</h2>
+      <p>Hello {{.Name}},</p>
+      <p>Your account registration has been reviewed by our administrators.</p>
+      <p>
+        Your account has been
+        <span class="approval-status"> {{.Status}} </span> by the admin.
+      </p>
+      <p>
+        If your account has been approved, you can now login and access our
+        services. If not, Your account will be delete
+        <b>after 2 days.</b> please contact our support team for further
+        assistance.
+      </p>
+      <p>Thank you,</p>
+      <p>Brawijaya Educational Event Center Team</p>
+    </div>
+  </body>
+</html>

@@ -14,6 +14,7 @@ import (
 type EmailService interface {
 	SendOTP(data model.EmailOTP) error
 	SendNotification(data model.EmailNotification) error
+	SendApprovalStatus(data model.EmailApproval) error
 }
 
 type mailer struct {
@@ -61,6 +62,24 @@ func (m *mailer) SendNotification(data model.EmailNotification) error {
 	buffer := new(bytes.Buffer)
 
 	if err := m.template.ExecuteTemplate(buffer, "notification_event_email.html", data); err != nil {
+		return err
+	}
+
+	mime := "MIME-version: 1.0;\nContent-Type: Text/html; charset=\"iso-8859-1\";\n\n"
+	fromUser := fmt.Sprintf("From: BREECE <%s>\n", m.Username)
+	toUser := fmt.Sprintf("To: %s\n", data.Email)
+	subjectEmail := fmt.Sprintf("Subject: %s\n", data.Subject)
+
+	auth := smtp.PlainAuth("", m.Username, m.Password, m.Host)
+	body := []byte(fromUser + toUser + subjectEmail + mime + buffer.String())
+
+	return smtp.SendMail(m.Host+":"+m.Port, auth, m.Username, []string{data.Email}, body)
+}
+
+func (m *mailer) SendApprovalStatus(data model.EmailApproval) error {
+	buffer := new(bytes.Buffer)
+
+	if err := m.template.ExecuteTemplate(buffer, "user_approval_email.html", data); err != nil {
 		return err
 	}
 
