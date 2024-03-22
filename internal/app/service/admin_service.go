@@ -145,7 +145,7 @@ func (s *adminService) VerifyOrganizer(req model.OrganizerVerifyRequest) (model.
 	} else {
 		email.Status = "Denied"
 		go s.Mailer.SendApprovalStatus(email)
-		go gocron.ScheduleDeleteOrganizerDenied(time.Now().Add(48 * time.Hour), s.UserRepository, user)
+		go gocron.ScheduleDeleteOrganizerDenied(time.Now().Add(24*time.Hour), s.UserRepository, user)
 	}
 
 	res := model.ProfileUserResponse{

@@ -13,6 +13,7 @@ import (
 	"github.com/AkbarFikri/BREECE-BE/internal/app/entity"
 	"github.com/AkbarFikri/BREECE-BE/internal/app/repository"
 	"github.com/AkbarFikri/BREECE-BE/internal/pkg/model"
+
 )
 
 type PaymentService interface {
@@ -64,7 +65,7 @@ func (s *paymentService) GenerateUrlAndToken(user model.UserTokenData, req model
 		UserID:    user.ID,
 		EventID:   event.ID,
 		Amount:    int64(event.Price),
-		Status:    "Pending",
+		Status:    "pending",
 		CreatedAt: time.Now(),
 	}
 

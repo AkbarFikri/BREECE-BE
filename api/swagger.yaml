@@ -44,6 +44,8 @@ tags:
     externalDocs:
       description: Find out more
       url: http://swagger.io
+  - name: Admin
+    description: Its a group for Admin Endpoints
 
 paths:
   /auth/register:
@@ -101,6 +103,122 @@ paths:
           description: Invalid Request data
         "500":
           description: Internal server error
+  /auth/register/organizer:
+    post:
+      tags:
+        - Auth
+      summary: Register new organizer
+      operationId: registerOrganizer
+      requestBody:
+        description: Use for register new admin in apps
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  example: emailmu@gmail.com
+                password:
+                  type: string
+                  example: kucingkulucu
+                full_name:
+                  type: string
+                  example: si kucing akbar
+        required: true
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: boolean
+                    example: false
+                  message:
+                    type: string
+                    example: Successfully register user and send OTP to email
+                  data:
+                    type: object
+                    properties:
+                      id:
+                        type: string
+                      email:
+                        type: string
+                        example: emailmu@gmail.com
+                      full_name:
+                        type: string
+                        example: si kucing akbar
+                      reference_id:
+                        type: string
+
+        "400":
+          description: Invalid Request data
+        "500":
+          description: Internal server error
+  /auth/register/admin:
+    post:
+      tags:
+        - Auth
+      summary: Register new admin
+      operationId: registerAdmin
+      parameters:
+        - in: header
+          name: API_KEY
+          schema:
+            type: string
+          required: true
+      requestBody:
+        description: Use for register new admin in apps
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  example: emailmu@gmail.com
+                password:
+                  type: string
+                  example: kucingkulucu
+                full_name:
+                  type: string
+                  example: si kucing akbar
+        required: true
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: boolean
+                    example: false
+                  message:
+                    type: string
+                    example: Successfully register user and send OTP to email
+                  data:
+                    type: object
+                    properties:
+                      id:
+                        type: string
+                      email:
+                        type: string
+                        example: emailmu@gmail.com
+                      full_name:
+                        type: string
+                        example: si kucing akbar
+                      reference_id:
+                        type: string
+
+        "400":
+          description: Invalid Request data
+        "500":
+          description: Internal server error
   /auth/login:
     post:
       tags:
@@ -109,6 +227,126 @@ paths:
       operationId: loginUser
       requestBody:
         description: Use for login user
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  example: emailmu@gmail.com
+                password:
+                  type: string
+                  example: kucingkulucu
+        required: true
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: boolean
+                    example: false
+                  message:
+                    type: string
+                    example: Successfully login
+                  data:
+                    type: object
+                    properties:
+                      token:
+                        type: string
+                      expire_at:
+                        type: string
+                        format: date-time
+        "400":
+          description: Invalid Request data
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: Invalid email or password
+                  data:
+                    type: object
+                    example:
+        "500":
+          description: Internal server error
+  /auth/login/organizer:
+    post:
+      tags:
+        - Auth
+      summary: Login organizer
+      operationId: loginOrganizer
+      requestBody:
+        description: Use for login organizer
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  example: emailmu@gmail.com
+                password:
+                  type: string
+                  example: kucingkulucu
+        required: true
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: boolean
+                    example: false
+                  message:
+                    type: string
+                    example: Successfully login
+                  data:
+                    type: object
+                    properties:
+                      token:
+                        type: string
+                      expire_at:
+                        type: string
+                        format: date-time
+        "400":
+          description: Invalid Request data
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: Invalid email or password
+                  data:
+                    type: object
+                    example:
+        "500":
+          description: Internal server error
+  /auth/login/admin:
+    post:
+      tags:
+        - Auth
+      summary: Login admin
+      operationId: loginAdmin
+      requestBody:
+        description: Use for login admin
         content:
           application/json:
             schema:
@@ -599,6 +837,81 @@ paths:
                     example:
         "500":
           description: Internal server error
+  /event/{id}:
+    get:
+      tags:
+        - Event
+      summary: Its use for fetch event details
+      operationId: getEventDetails
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: string
+            format: uuid
+          required: true
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: boolean
+                    example: false
+                  message:
+                    type: string
+                    example: Successfully to verified profile
+                  data:
+                    type: object
+                    properties:
+                      id:
+                        type: string
+                        format: uuid
+                      title:
+                        type: string
+                      description:
+                        type: string
+                      speakers:
+                        type: array
+                        items: {}
+                      speaker_roles:
+                        type: array
+                        items: {}
+                      place:
+                        type: string
+                      date:
+                        type: string
+                        format: date-time
+                      start_at:
+                        type: string
+                        format: date-time
+                      organize_by:
+                        type: string
+                        format: uuid
+        "400":
+          description: Invalid Request data
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: Bad request, data provided is invalid
+                  data:
+                    type: object
+                    example:
+        "500":
+          description: Internal server error
+
   /payment/checkout:
     post:
       tags:
@@ -668,6 +981,230 @@ paths:
       responses:
         "200":
           description: Payment success
+
+  /admin/organizer:
+    get:
+      tags:
+        - Admin
+      summary: This endpoint used by admin for see all the organizer user
+      operationId: getOrganizerUser
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: boolean
+                    example: false
+                  message:
+                    type: string
+                    example: Successfully to verified profile
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                        email:
+                          type: string
+                          example: emailmu@gmail.com
+                        full_name:
+                          type: string
+                        nim_nik:
+                          type: string
+                        prodi:
+                          type: string
+                        universitas:
+                          type: string
+                        id_url:
+                          type: string
+                        is_email_verified:
+                          type: boolean
+                          example: true
+                        is_profile_verified:
+                          type: boolean
+                          example: false
+        "404":
+          description: Record Not Found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: Bad request, data provided is invalid
+                  data:
+                    type: array
+                    example: []
+        "400":
+          description: Invalid Request data
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: Bad request, data provided is invalid
+                  data:
+                    type: object
+                    example:
+        "500":
+          description: Internal server error
+  /admin/organizer/{id}:
+    get:
+      tags:
+        - Admin
+      summary: This endpoint used by admin for see all the organizer user
+      operationId: getOrganizerUser
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: string
+            format: uuid
+          required: true
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: boolean
+                    example: false
+                  message:
+                    type: string
+                    example: Successfully to verified profile
+                  data:
+                    type: object
+                    properties:
+                      id:
+                        type: string
+                      email:
+                        type: string
+                        example: emailmu@gmail.com
+                      full_name:
+                        type: string
+                      nim_nik:
+                        type: string
+                      prodi:
+                        type: string
+                      universitas:
+                        type: string
+                      id_url:
+                        type: string
+                      is_email_verified:
+                        type: boolean
+                        example: true
+                      is_profile_verified:
+                        type: boolean
+                        example: false
+        "400":
+          description: Invalid Request data
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: Bad request, data provided is invalid
+                  data:
+                    type: object
+                    example:
+        "500":
+          description: Internal server error
+
+  /admin/organizer/verify:
+    patch:
+      tags:
+        - Admin
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                id:
+                  type: string
+                  format: uuid
+                verifiy:
+                  type: boolean
+                  example: true
+
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: boolean
+                    example: false
+                  message:
+                    type: string
+                    example: Successfully to verified organizer profile, and send approval to email
+                  data:
+                    type: object
+                    properties:
+                      id:
+                        type: string
+                      email:
+                        type: string
+                        example: emailmu@gmail.com
+                      full_name:
+                        type: string
+                      nim_nik:
+                        type: string
+                      prodi:
+                        type: string
+                      universitas:
+                        type: string
+                      id_url:
+                        type: string
+                      is_email_verified:
+                        type: boolean
+                        example: true
+                      is_profile_verified:
+                        type: boolean
+                        example: true
+        "400":
+          description: Invalid Request data
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: Bad request, data provided is invalid
+                  data:
+                    type: object
+                    example:
+        "500":
+          description: Internal server error
 
 components:
   securitySchemes:

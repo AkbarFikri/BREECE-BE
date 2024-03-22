@@ -10,6 +10,7 @@ import (
 
 	"github.com/AkbarFikri/BREECE-BE/internal/app/entity"
 	"github.com/AkbarFikri/BREECE-BE/internal/pkg/model"
+
 )
 
 type EventRepository interface {
@@ -122,11 +123,11 @@ func (r *eventRepository) FindWithFilter(params model.FilterParam) ([]entity.Eve
 
 func (r *eventRepository) FindForBooking(id string) (entity.Event, error) {
 	var event entity.Event
+
 	tx := r.db.Begin()
 
 	//TODO ???
 	if err := tx.Clauses(clause.Locking{Strength: "UPDATE"}).Where("id = ?", id).First(&event).Error; err != nil {
-		tx.Rollback()
 		return event, err
 	}
 
