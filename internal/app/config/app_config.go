@@ -28,17 +28,18 @@ func StartUp(config *StartUpConfig) {
 	cacheRepository := repository.NewCacheRepository()
 	invoiceRepository := repository.NewInvoiceRepository(config.DB)
 	ticketRepository := repository.NewTicketRepository(config.DB)
+	categoryRepository := repository.NewCategoryRepository(config.DB)
 
 	// Service
 	userService := service.NewUserService(userRepository, cacheRepository, supabase, mailer)
-	eventService := service.NewEventService(eventRepository, supabase)
+	eventService := service.NewEventService(eventRepository, supabase, categoryRepository)
 	paymentService := service.NewPaymentService(invoiceRepository, eventRepository)
 	ticketService := service.NewTicketService(eventRepository, invoiceRepository, ticketRepository, userRepository, mailer)
 	adminService := service.NewAdminService(userRepository, mailer)
 
 	// Handler
 	authHandler := rest.NewAuthHandler(userService)
-	userHandler := rest.NewUserHandler(userService)
+	userHandler := rest.NewUserHandler(userService, paymentService)
 	eventHandler := rest.NewEventHandler(eventService)
 	paymentHandler := rest.NewPaymentHandler(paymentService, ticketService)
 	adminHandler := rest.NewAdminHandler(adminService)

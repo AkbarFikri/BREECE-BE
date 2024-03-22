@@ -11,24 +11,28 @@ import (
 	"github.com/AkbarFikri/BREECE-BE/internal/app/entity"
 	"github.com/AkbarFikri/BREECE-BE/internal/app/repository"
 	"github.com/AkbarFikri/BREECE-BE/internal/pkg/model"
-
 )
 
 type EventService interface {
 	PostEvent(user model.UserTokenData, req model.EventRequest) (model.ServiceResponse, error)
 	FetchEvent(user model.UserTokenData, params model.FilterParam) (model.ServiceResponse, error)
 	FetchEventDetails(id string) (model.ServiceResponse, error)
+	FetchCategory() (model.ServiceResponse, error)
 }
 
 type eventService struct {
-	EventRepository repository.EventRepository
-	SupabaseBucket  *supabasestorageuploader.Client
+	EventRepository    repository.EventRepository
+	CategoryRepository repository.CategoryRepository
+	SupabaseBucket     *supabasestorageuploader.Client
 }
 
 func NewEventService(er repository.EventRepository,
-	sb *supabasestorageuploader.Client) EventService {
+	sb *supabasestorageuploader.Client,
+	cr repository.CategoryRepository) EventService {
 	return &eventService{
-		EventRepository: er,
+		EventRepository:    er,
+		SupabaseBucket:     sb,
+		CategoryRepository: cr,
 	}
 }
 
@@ -176,16 +180,34 @@ func (s *eventService) FetchEventDetails(id string) (model.ServiceResponse, erro
 	event, err := s.EventRepository.FindById(id)
 	if err != nil {
 		return model.ServiceResponse{
-			Code: http.StatusNotFound,
-			Error: true,
+			Code:    http.StatusNotFound,
+			Error:   true,
 			Message: "Event with id provided is not found",
 		}, err
 	}
 
 	return model.ServiceResponse{
-		Code: http.StatusOK,
-		Error: false,
+		Code:    http.StatusOK,
+		Error:   false,
 		Message: "Successfully found event",
-		Data: event,
+		Data:    event,
+	}, nil
+}
+
+func (s *eventService) FetchCategory() (model.ServiceResponse, error) {
+	categories, err := s.CategoryRepository.FindAll()
+	if err != nil {
+		return model.ServiceResponse{
+			Code:    http.StatusInternalServerError,
+			Error:   true,
+			Message: "Something went wrong, failed to find category",
+		}, err
+	}
+
+	return model.ServiceResponse{
+		Code:    http.StatusOK,
+		Error:   false,
+		Message: "Successfully find all categories",
+		Data:    categories,
 	}, nil
 }

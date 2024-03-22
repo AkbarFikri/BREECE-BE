@@ -55,6 +55,7 @@ func (c *RouteConfig) UserRoute(r *gin.RouterGroup) {
 	userEnds := r.Group("/user")
 	userEnds.Use(middleware.JwtUser())
 	userEnds.GET("/current", c.UserHandler.Current)
+	userEnds.GET("/payment", c.UserHandler.GetPaymentHistory)
 }
 
 func (c *RouteConfig) EventRoute(r *gin.RouterGroup) {
@@ -62,6 +63,7 @@ func (c *RouteConfig) EventRoute(r *gin.RouterGroup) {
 	eventEnds.Use(middleware.JwtUser())
 	eventEnds.POST("/", middleware.OrganizerRole(), c.EventHandler.PostEvent)
 	eventEnds.GET("/", c.EventHandler.GetEvent)
+	eventEnds.GET("/category", c.EventHandler.GetEventCategory)
 	eventEnds.GET("/:id", c.EventHandler.GetEventDetails)
 }
 

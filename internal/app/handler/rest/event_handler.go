@@ -86,3 +86,12 @@ func (h *EventHandler) GetEventDetails(ctx *gin.Context) {
 
 	helper.SuccessResponse(ctx, res)
 }
+
+func (h *EventHandler) GetEventCategory(ctx *gin.Context) {
+	res, err := h.eventService.FetchCategory()
+	if err != nil {
+		helper.ErrorResponse(ctx, res)
+	}
+
+	helper.SuccessResponse(ctx, res)
+}

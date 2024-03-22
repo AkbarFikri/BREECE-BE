@@ -1,6 +1,7 @@
 package service
 
 import (
+	"errors"
 	"net/http"
 	"os"
 	"time"
@@ -19,6 +20,7 @@ import (
 type PaymentService interface {
 	GenerateUrlAndToken(user model.UserTokenData, req model.PaymentRequest) (model.ServiceResponse, error)
 	VerifyPayment(orderId string) bool
+	FetchPaymentHistory(user model.UserTokenData) (model.ServiceResponse, error)
 }
 
 type paymentService struct {
@@ -137,4 +139,59 @@ func (s *paymentService) VerifyPayment(orderId string) bool {
 		}
 	}
 	return false
+}
+
+func (s *paymentService) FetchPaymentHistory(user model.UserTokenData) (model.ServiceResponse, error) {
+	invoices, err := s.InvoiceRepository.FindByUserId(user.ID)
+	if err != nil {
+		return model.ServiceResponse{
+			Code:    http.StatusInternalServerError,
+			Error:   true,
+			Message: "Something went wrong, failed to find payment history",
+		}, err
+	}
+
+	if len(invoices) == 0 {
+		return model.ServiceResponse{
+			Code:    http.StatusNotFound,
+			Error:   true,
+			Message: "Record not found",
+		}, errors.New("record not found")
+	}
+
+	var res []model.PaymentHistoryResponse
+
+	for _, invoice := range invoices {
+		dumpEvent := model.EventResponse{
+			ID:           invoice.Event.ID,
+			CategoryID:   invoice.Event.CategoryID,
+			Title:        invoice.Event.Title,
+			Description:  invoice.Event.Description,
+			Place:        invoice.Event.Tempat,
+			Speakers:     invoice.Event.Speakers,
+			SpeakersRole: invoice.Event.SpeakersRole,
+			Date:         invoice.Event.Date.String(),
+			StartAt:      invoice.Event.StartAt.String(),
+			Link:         invoice.Event.Link,
+			Price:        invoice.Event.Price,
+			OrganizeBy:   invoice.Event.OrganizeBy,
+			IsPublic:     invoice.Event.IsPublic,
+		}
+
+		dump := model.PaymentHistoryResponse{
+			ID:     invoice.ID,
+			Amount: invoice.Amount,
+			Status: invoice.Status,
+			Event: dumpEvent,
+		}
+
+		res = append(res, dump)
+	}
+
+	return model.ServiceResponse{
+		Code:    http.StatusOK,
+		Error:   false,
+		Message: "Successfully find all payment history",
+		Data:    res,
+	}, nil
 }

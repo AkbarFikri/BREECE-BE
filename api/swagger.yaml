@@ -988,6 +988,8 @@ paths:
         - Admin
       summary: This endpoint used by admin for see all the organizer user
       operationId: getOrganizerUser
+      security:
+        - bearerAuth: []
       responses:
         "200":
           description: Successful operation
@@ -1068,6 +1070,8 @@ paths:
         - Admin
       summary: This endpoint used by admin for see all the organizer user
       operationId: getOrganizerUser
+      security:
+        - bearerAuth: []
       parameters:
         - in: path
           name: id
@@ -1136,6 +1140,8 @@ paths:
     patch:
       tags:
         - Admin
+      security:
+        - bearerAuth: []
       requestBody:
         content:
           application/json:
