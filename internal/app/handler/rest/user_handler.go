@@ -11,15 +11,18 @@ type UserHandler struct {
 	userService    service.UserService
 	paymentService service.PaymentService
 	ticketService  service.TicketService
+	eventService   service.EventService
 }
 
 func NewUserHandler(us service.UserService,
 	ps service.PaymentService,
-	ts service.TicketService) UserHandler {
+	ts service.TicketService,
+	es service.EventService) UserHandler {
 	return UserHandler{
 		userService:    us,
 		paymentService: ps,
 		ticketService:  ts,
+		eventService:   es,
 	}
 }
 
@@ -53,6 +56,18 @@ func (h *UserHandler) GetTicketHisoty(ctx *gin.Context) {
 	res, err := h.ticketService.FetchUserTicketHistory(user)
 	if err != nil {
 		helper.ErrorResponse(ctx, res)
+	}
+
+	helper.SuccessResponse(ctx, res)
+}
+
+func (h *UserHandler) GetCreatedEvent(ctx *gin.Context) {
+	user := helper.GetUserLoginData(ctx)
+
+	res, err := h.eventService.FetchOrganizerEvent(user)
+	if err != nil {
+		helper.ErrorResponse(ctx, res)
+		return
 	}
 
 	helper.SuccessResponse(ctx, res)

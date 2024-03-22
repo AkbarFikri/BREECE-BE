@@ -11,12 +11,14 @@ import (
 	"github.com/AkbarFikri/BREECE-BE/internal/app/entity"
 	"github.com/AkbarFikri/BREECE-BE/internal/app/repository"
 	"github.com/AkbarFikri/BREECE-BE/internal/pkg/model"
+
 )
 
 type EventService interface {
 	PostEvent(user model.UserTokenData, req model.EventRequest) (model.ServiceResponse, error)
 	FetchEvent(user model.UserTokenData, params model.FilterParam) (model.ServiceResponse, error)
 	FetchEventDetails(id string) (model.ServiceResponse, error)
+	FetchOrganizerEvent(user model.UserTokenData) (model.ServiceResponse, error)
 	FetchCategory() (model.ServiceResponse, error)
 }
 
@@ -209,5 +211,55 @@ func (s *eventService) FetchCategory() (model.ServiceResponse, error) {
 		Error:   false,
 		Message: "Successfully find all categories",
 		Data:    categories,
+	}, nil
+}
+
+func (s *eventService) FetchOrganizerEvent(user model.UserTokenData) (model.ServiceResponse, error) {
+	events, err := s.EventRepository.FindByOrganizer(user.ID)
+	if err != nil {
+		return model.ServiceResponse{
+			Code:    http.StatusBadRequest,
+			Error:   true,
+			Message: "Something went wrong, failed to find event",
+		}, err
+	}
+
+	if len(events) == 0 {
+		return model.ServiceResponse{
+			Code:    http.StatusNotFound,
+			Error:   true,
+			Message: "Record not found",
+		}, errors.New("record not found")
+	}
+
+	var res []model.EventResponse
+
+	for _, event := range events {
+		dump := model.EventResponse{
+			ID:           event.ID,
+			CategoryID:   event.CategoryID,
+			Title:        event.Title,
+			Description:  event.Description,
+			Place:        event.Tempat,
+			Speakers:     event.Speakers,
+			SpeakersRole: event.SpeakersRole,
+			BannerUrl:    event.BannerUrl,
+			Date:         event.Date.String(),
+			StartAt:      event.StartAt.String(),
+			Link:         event.Link,
+			Price:        event.Price,
+			TicketQty:    event.TicketQty,
+			OrganizeBy:   event.OrganizeBy,
+			IsPublic:     event.IsPublic,
+		}
+
+		res = append(res, dump)
+	}
+
+	return model.ServiceResponse{
+		Code:    http.StatusOK,
+		Error:   false,
+		Message: "Successfully find all events",
+		Data:    res,
 	}, nil
 }

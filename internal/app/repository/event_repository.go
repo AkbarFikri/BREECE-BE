@@ -17,6 +17,7 @@ type EventRepository interface {
 	FindById(id string) (entity.Event, error)
 	FindAllPublic(page int) ([]entity.Event, error)
 	FindWithFilter(params model.FilterParam) ([]entity.Event, error)
+	FindByOrganizer(id string) ([]entity.Event, error)
 	FindForBooking(id string) (entity.Event, error)
 	Update(event entity.Event) error
 	UpdateFailurePayment(id string) error
@@ -40,6 +41,16 @@ func (r *eventRepository) FindById(id string) (entity.Event, error) {
 		return event, err
 	}
 	return event, nil
+}
+
+func (r *eventRepository) FindByOrganizer(id string) ([]entity.Event, error) {
+	var events []entity.Event
+
+	if err := r.db.Where("organize_by = ?", id).Find(&events).Error; err != nil {
+		return events, err
+	}
+
+	return events, nil
 }
 
 // FindAllPublic implements EventRepository.
@@ -80,7 +91,6 @@ func (r *eventRepository) FindWithFilter(params model.FilterParam) ([]entity.Eve
 	}
 
 	if params.Date != "" {
-		// data, _ := time.Parse("2006-01-02 15:04:05 -0700 MST", params.Date)
 		if strings.Contains(sql, "WHERE") {
 			sql = fmt.Sprintf("%s AND CAST(date as DATE) = '%s'", sql, params.Date)
 		} else {
@@ -96,21 +106,7 @@ func (r *eventRepository) FindWithFilter(params model.FilterParam) ([]entity.Eve
 		}
 	}
 
-	// if params.Sort != "" {
-	// 	sql = fmt.Sprintf("%s ORDER BY date %s", sql, params.Sort)
-	// }
-
 	perPage := 10
-
-	// if sql != "" {
-	// 	if err := r.db.Where(sql).Limit(perPage).Offset((params.Page - 1) * perPage).Find(&events).Error; err != nil {
-	// 		return events, err
-	// 	}
-	// } else {
-	// 	if err := r.db.Limit(perPage).Offset((params.Page - 1) * perPage).Find(&events).Error; err != nil {
-	// 		return events, err
-	// 	}
-	// }
 
 	sql = fmt.Sprintf("%s OFFSET %d LIMIT %d", sql, (params.Page-1)*perPage, perPage)
 

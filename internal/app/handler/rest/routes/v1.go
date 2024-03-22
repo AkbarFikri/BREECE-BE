@@ -58,6 +58,7 @@ func (c *RouteConfig) UserRoute(r *gin.RouterGroup) {
 	userEnds.GET("/current", c.UserHandler.Current)
 	userEnds.GET("/payment", c.UserHandler.GetPaymentHistory)
 	userEnds.GET("/event", c.UserHandler.GetTicketHisoty)
+	userEnds.GET("/organizer/event", c.UserHandler.GetCreatedEvent)
 }
 
 func (c *RouteConfig) EventRoute(r *gin.RouterGroup) {
