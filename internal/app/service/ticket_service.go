@@ -1,7 +1,9 @@
 package service
 
 import (
+	"errors"
 	"fmt"
+	"net/http"
 	"time"
 
 	"github.com/google/uuid"
@@ -16,6 +18,8 @@ import (
 type TicketService interface {
 	ConfirmedPayment(invoiceId string) error
 	FailurePayment(invoiceId string) error
+	FetchUserTicketHistory(user model.UserTokenData) (model.ServiceResponse, error)
+	FetchParticipantTicket(user model.UserTokenData, eventId string) (model.ServiceResponse, error)
 }
 
 type ticketService struct {
@@ -99,4 +103,128 @@ func (s *ticketService) FailurePayment(invoiceId string) error {
 	}
 
 	return nil
+}
+
+func (s *ticketService) FetchUserTicketHistory(user model.UserTokenData) (model.ServiceResponse, error) {
+	tickets, err := s.TicketRepository.FindByUserId(user.ID)
+	if err != nil {
+		return model.ServiceResponse{
+			Code:    http.StatusInternalServerError,
+			Error:   true,
+			Message: "Something went wrong, failed to find ticket history",
+		}, err
+	}
+
+	if len(tickets) == 0 {
+		return model.ServiceResponse{
+			Code:    http.StatusNotFound,
+			Error:   true,
+			Message: "Record not found",
+		}, errors.New("record not found")
+	}
+
+	var res []model.TicketUserResponse
+
+	for _, t := range tickets {
+		dumpEvent := model.EventResponse{
+			ID:           t.Event.ID,
+			CategoryID:   t.Event.CategoryID,
+			Title:        t.Event.Title,
+			Description:  t.Event.Description,
+			Place:        t.Event.Tempat,
+			Speakers:     t.Event.Speakers,
+			SpeakersRole: t.Event.SpeakersRole,
+			Date:         t.Event.Date.String(),
+			StartAt:      t.Event.StartAt.String(),
+			Link:         t.Event.Link,
+			Price:        t.Event.Price,
+			OrganizeBy:   t.Event.OrganizeBy,
+			IsPublic:     t.Event.IsPublic,
+		}
+
+		dump := model.TicketUserResponse{
+			ID:        t.ID,
+			UserID:    t.UserID,
+			EventID:   t.EventID,
+			InvoiceID: t.InvoiceID,
+			CreatedAt: t.CreatedAt,
+			Event:     dumpEvent,
+		}
+
+		res = append(res, dump)
+	}
+
+	return model.ServiceResponse{
+		Code:    http.StatusOK,
+		Error:   false,
+		Message: "Successfully find all tickets",
+		Data:    res,
+	}, nil
+}
+
+func (s *ticketService) FetchParticipantTicket(user model.UserTokenData, eventId string) (model.ServiceResponse, error) {
+	event, err := s.EventRepository.FindById(eventId)
+	if err != nil {
+		return model.ServiceResponse{
+			Code:    http.StatusBadRequest,
+			Error:   true,
+			Message: "Something went wrong, failed to find event",
+		}, err
+	}
+
+	if event.OrganizeBy != user.ID {
+		return model.ServiceResponse{
+			Code:    http.StatusForbidden,
+			Error:   true,
+			Message: "You're not allowed to look at this data",
+		}, err
+	}
+
+	tickets, err := s.TicketRepository.FindByEventId(eventId)
+	if err != nil {
+		return model.ServiceResponse{
+			Code:    http.StatusInternalServerError,
+			Error:   true,
+			Message: "Something went wrong, failed to find participants history",
+		}, err
+	}
+
+	if len(tickets) == 0 {
+		return model.ServiceResponse{
+			Code:    http.StatusNotFound,
+			Error:   true,
+			Message: "Record not found",
+		}, errors.New("record not found")
+	}
+
+	var res []model.TicketOrganizerResponse
+
+	for _, t := range tickets {
+		dumpUser := model.ProfileUserResponse{
+			ID:          t.ID,
+			Email:       t.User.Email,
+			FullName:    t.User.FullName,
+			NimNik:      t.User.NimNik,
+			Prodi:       t.User.Prodi,
+			Universitas: t.User.Universitas,
+		}
+
+		dump := model.TicketOrganizerResponse{
+			ID:        t.ID,
+			UserID:    t.UserID,
+			EventID:   t.EventID,
+			InvoiceID: t.InvoiceID,
+			CreatedAt: t.CreatedAt,
+			User:      dumpUser,
+		}
+
+		res = append(res, dump)
+	}
+
+	return model.ServiceResponse{
+		Code:    http.StatusOK,
+		Error:   false,
+		Message: "Successfully find all participants",
+		Data:    res,
+	}, nil
 }

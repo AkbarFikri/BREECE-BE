@@ -10,12 +10,16 @@ import (
 type UserHandler struct {
 	userService    service.UserService
 	paymentService service.PaymentService
+	ticketService  service.TicketService
 }
 
-func NewUserHandler(us service.UserService, ps service.PaymentService) UserHandler {
+func NewUserHandler(us service.UserService,
+	ps service.PaymentService,
+	ts service.TicketService) UserHandler {
 	return UserHandler{
 		userService:    us,
 		paymentService: ps,
+		ticketService:  ts,
 	}
 }
 
@@ -36,6 +40,17 @@ func (h *UserHandler) GetPaymentHistory(ctx *gin.Context) {
 
 	res, err := h.paymentService.FetchPaymentHistory(user)
 
+	if err != nil {
+		helper.ErrorResponse(ctx, res)
+	}
+
+	helper.SuccessResponse(ctx, res)
+}
+
+func (h *UserHandler) GetTicketHisoty(ctx *gin.Context) {
+	user := helper.GetUserLoginData(ctx)
+
+	res, err := h.ticketService.FetchUserTicketHistory(user)
 	if err != nil {
 		helper.ErrorResponse(ctx, res)
 	}

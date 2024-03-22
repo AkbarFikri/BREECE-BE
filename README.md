@@ -117,7 +117,7 @@ The Member of our team
 
 1. Akbar Fikri Abdillah ( Backend Developer )
 2. Pande Gede Natha Satvika ( Product Design )
-3. Faidz Gunawan ( Product Manager )
+3. Muhammad Faidz Agustiawan ( Product Manager )
 4. Kevin Joshua Silalahi ( Frontend Developer )
 
 ## 🔒License

@@ -39,8 +39,8 @@ func StartUp(config *StartUpConfig) {
 
 	// Handler
 	authHandler := rest.NewAuthHandler(userService)
-	userHandler := rest.NewUserHandler(userService, paymentService)
-	eventHandler := rest.NewEventHandler(eventService)
+	userHandler := rest.NewUserHandler(userService, paymentService, ticketService)
+	eventHandler := rest.NewEventHandler(eventService, ticketService)
 	paymentHandler := rest.NewPaymentHandler(paymentService, ticketService)
 	adminHandler := rest.NewAdminHandler(adminService)
 

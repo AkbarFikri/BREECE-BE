@@ -14,7 +14,6 @@ import (
 	"github.com/AkbarFikri/BREECE-BE/internal/app/entity"
 	"github.com/AkbarFikri/BREECE-BE/internal/app/repository"
 	"github.com/AkbarFikri/BREECE-BE/internal/pkg/model"
-
 )
 
 type PaymentService interface {
@@ -182,7 +181,7 @@ func (s *paymentService) FetchPaymentHistory(user model.UserTokenData) (model.Se
 			ID:     invoice.ID,
 			Amount: invoice.Amount,
 			Status: invoice.Status,
-			Event: dumpEvent,
+			Event:  dumpEvent,
 		}
 
 		res = append(res, dump)

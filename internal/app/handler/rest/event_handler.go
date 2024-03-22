@@ -12,12 +12,14 @@ import (
 )
 
 type EventHandler struct {
-	eventService service.EventService
+	eventService  service.EventService
+	ticketService service.TicketService
 }
 
-func NewEventHandler(es service.EventService) EventHandler {
+func NewEventHandler(es service.EventService, ts service.TicketService) EventHandler {
 	return EventHandler{
-		eventService: es,
+		eventService:  es,
+		ticketService: ts,
 	}
 }
 
@@ -91,7 +93,31 @@ func (h *EventHandler) GetEventCategory(ctx *gin.Context) {
 	res, err := h.eventService.FetchCategory()
 	if err != nil {
 		helper.ErrorResponse(ctx, res)
+		return
 	}
 
 	helper.SuccessResponse(ctx, res)
+}
+
+func (h *EventHandler) GetEventParticipant(ctx *gin.Context) {
+	eventId := ctx.Param("id")
+	user := helper.GetUserLoginData(ctx)
+
+	if eventId == "" {
+		helper.ErrorResponse(ctx, model.ServiceResponse{
+			Code:    http.StatusBadRequest,
+			Error:   true,
+			Message: "Bad request, data provided is invalid",
+		})
+		return
+	}
+
+	res, err := h.ticketService.FetchParticipantTicket(user, eventId)
+	if err != nil {
+		helper.ErrorResponse(ctx, res)
+		return
+	}
+
+	helper.SuccessResponse(ctx, res)
+
 }

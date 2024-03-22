@@ -9,7 +9,8 @@ import (
 
 type TicketRepository interface {
 	FindById(id string) (entity.Ticket, error)
-	FindByUserIdAndEventId(userId, eventId string) (entity.Ticket, error)
+	FindByUserId(id string) ([]entity.Ticket, error)
+	FindByEventId(id string) ([]entity.Ticket, error)
 	Insert(ticket entity.Ticket) error
 	Update(ticket entity.Ticket) error
 }
@@ -34,8 +35,20 @@ func (r *ticketRepository) FindById(id string) (entity.Ticket, error) {
 }
 
 // FindByUserIdAndEventId implements TicketRepository.
-func (*ticketRepository) FindByUserIdAndEventId(userId string, eventId string) (entity.Ticket, error) {
-	panic("unimplemented")
+func (r *ticketRepository) FindByUserId(id string) ([]entity.Ticket, error) {
+	var tickets []entity.Ticket
+	if err := r.db.Preload("Event").Where("user_id = ?", id).Find(&tickets).Error; err != nil {
+		return tickets, err
+	}
+	return tickets, nil
+}
+
+func (r *ticketRepository) FindByEventId(id string) ([]entity.Ticket, error) {
+	var tickets []entity.Ticket
+	if err := r.db.Preload("User").Where("user_id = ?", id).Find(&tickets).Error; err != nil {
+		return tickets, err
+	}
+	return tickets, nil
 }
 
 // Insert implements TicketRepository.
