@@ -2,7 +2,6 @@ package model
 
 import (
 	"mime/multipart"
-
 )
 
 type FilterParam struct {
@@ -17,9 +16,9 @@ type FilterParam struct {
 
 type EventRequest struct {
 	CategoryID   string                `form:"category_id" binding:"required"`
-	Title        string                `form:"title" `
-	Description  string                `form:"description"`
-	Place        string                `form:"place" default:"Online"`
+	Title        string                `form:"title" binding:"required,alpha"`
+	Description  string                `form:"description" binding:"required,alpha"`
+	Place        string                `form:"place" default:"Online" binding:"required,alpha"`
 	Speakers     []string              `form:"speakers" binding:"required"`
 	SpeakersRole []string              `form:"speaker_roles" binding:"required"`
 	Banner       *multipart.FileHeader `form:"banner"`
@@ -47,4 +46,13 @@ type EventResponse struct {
 	TicketQty    uint16   `json:"ticket_qty"`
 	OrganizeBy   string   `json:"organize_by"`
 	IsPublic     bool     `json:"is_public"`
+}
+
+type CategoriesResponse struct {
+	ID   string `json:"id"`
+	Name string `json:"name"`
+}
+
+type CategoriesRequest struct {
+	Name string `json:"name" binding:"required,alpha"`
 }

@@ -1,6 +1,8 @@
 package service
 
 import (
+	"errors"
+	"fmt"
 	"net/http"
 	"os"
 	"time"
@@ -13,17 +15,18 @@ import (
 	"github.com/AkbarFikri/BREECE-BE/internal/app/entity"
 	"github.com/AkbarFikri/BREECE-BE/internal/app/repository"
 	"github.com/AkbarFikri/BREECE-BE/internal/pkg/model"
-
 )
 
 type PaymentService interface {
 	GenerateUrlAndToken(user model.UserTokenData, req model.PaymentRequest) (model.ServiceResponse, error)
 	VerifyPayment(orderId string) bool
+	FetchPaymentHistory(user model.UserTokenData) (model.ServiceResponse, error)
 }
 
 type paymentService struct {
 	InvoiceRepository repository.InvoiceRepository
 	EventRepository   repository.EventRepository
+	TicketRepository  repository.TicketRepository
 	Client            snap.Client
 }
 
@@ -41,21 +44,29 @@ func NewPaymentService(ir repository.InvoiceRepository, er repository.EventRepos
 
 // GenerateUrlAndToken implements PaymentService.
 func (s *paymentService) GenerateUrlAndToken(user model.UserTokenData, req model.PaymentRequest) (model.ServiceResponse, error) {
-	event, err := s.EventRepository.FindForBooking(req.EventID)
+	event, err := s.EventRepository.FindById(req.EventID)
 	if err != nil {
-		if err.Error() == "ticket is sold out" {
-			return model.ServiceResponse{
-				Code:    http.StatusUnprocessableEntity,
-				Error:   true,
-				Message: "Ticket is sold out.",
-			}, err
-		} else {
-			return model.ServiceResponse{
-				Code:    http.StatusInternalServerError,
-				Error:   true,
-				Message: "Something went wrong, failed to find event with id provided",
-			}, err
-		}
+		return model.ServiceResponse{
+			Code:    http.StatusBadRequest,
+			Error:   true,
+			Message: "Something went wrong, failed to find event",
+		}, err
+	}
+
+	if event.TicketQty == 0 {
+		return model.ServiceResponse{
+			Code:    http.StatusNotAcceptable,
+			Error:   true,
+			Message: "Ticket is sold out",
+		}, err
+	}
+
+	if err := s.EventRepository.UpdateTicketDecrement(event); err != nil {
+		return model.ServiceResponse{
+			Code:    http.StatusBadRequest,
+			Error:   true,
+			Message: "Something went wrong, failed to update event ticket_qty",
+		}, err
 	}
 
 	invoice := entity.Invoice{
@@ -63,14 +74,27 @@ func (s *paymentService) GenerateUrlAndToken(user model.UserTokenData, req model
 		UserID:    user.ID,
 		EventID:   event.ID,
 		Amount:    int64(event.Price),
-		Status:    "Pending",
+		Status:    "pending",
 		CreatedAt: time.Now(),
 	}
 
 	var snapResp *snap.Response
 
 	if event.Price == 0 {
-		invoice.Snap = "Success"
+		invoice.Snap = "success"
+		invoice.Status = "success"
+
+		ticket := entity.Ticket{
+			ID:        uuid.NewString(),
+			UserID:    user.ID,
+			InvoiceID: invoice.ID,
+			EventID:   event.ID,
+			CreatedAt: time.Now().UTC(),
+		}
+
+		if err := s.TicketRepository.Insert(ticket); err != nil {
+			fmt.Print("Error")
+		}
 	} else {
 		payReq := &snap.Request{
 			TransactionDetails: midtrans.TransactionDetails{
@@ -122,22 +146,71 @@ func (s *paymentService) VerifyPayment(orderId string) bool {
 		if transactionStatusResp != nil {
 			if transactionStatusResp.TransactionStatus == "capture" {
 				if transactionStatusResp.FraudStatus == "challenge" {
-					// TODO set transaction status on your database to 'challenge'
-					// e.g: 'Payment status challenged. Please take action on your Merchant Administration Portal
+					return false
 				} else if transactionStatusResp.FraudStatus == "accept" {
-					// TODO set transaction status on your database to 'success'
+					return true
 				}
 			} else if transactionStatusResp.TransactionStatus == "settlement" {
 				return true
-			} else if transactionStatusResp.TransactionStatus == "deny" {
-				// TODO you can ignore 'deny', because most of the time it allows payment retries
-				// and later can become success
 			} else if transactionStatusResp.TransactionStatus == "cancel" || transactionStatusResp.TransactionStatus == "expire" {
 				return false
-			} else if transactionStatusResp.TransactionStatus == "pending" {
-				// TODO set transaction status on your databaase to 'pending' / waiting payment
 			}
 		}
 	}
 	return false
+}
+
+func (s *paymentService) FetchPaymentHistory(user model.UserTokenData) (model.ServiceResponse, error) {
+	invoices, err := s.InvoiceRepository.FindByUserId(user.ID)
+	if err != nil {
+		return model.ServiceResponse{
+			Code:    http.StatusInternalServerError,
+			Error:   true,
+			Message: "Something went wrong, failed to find payment history",
+		}, err
+	}
+
+	if len(invoices) == 0 {
+		return model.ServiceResponse{
+			Code:    http.StatusNotFound,
+			Error:   true,
+			Message: "Record not found",
+		}, errors.New("record not found")
+	}
+
+	var res []model.PaymentHistoryResponse
+
+	for _, invoice := range invoices {
+		dumpEvent := model.EventResponse{
+			ID:           invoice.Event.ID,
+			CategoryID:   invoice.Event.CategoryID,
+			Title:        invoice.Event.Title,
+			Description:  invoice.Event.Description,
+			Place:        invoice.Event.Tempat,
+			Speakers:     invoice.Event.Speakers,
+			SpeakersRole: invoice.Event.SpeakersRole,
+			Date:         invoice.Event.Date.String(),
+			StartAt:      invoice.Event.StartAt.String(),
+			Link:         invoice.Event.Link,
+			Price:        invoice.Event.Price,
+			OrganizeBy:   invoice.Event.OrganizeBy,
+			IsPublic:     invoice.Event.IsPublic,
+		}
+
+		dump := model.PaymentHistoryResponse{
+			ID:     invoice.ID,
+			Amount: invoice.Amount,
+			Status: invoice.Status,
+			Event:  dumpEvent,
+		}
+
+		res = append(res, dump)
+	}
+
+	return model.ServiceResponse{
+		Code:    http.StatusOK,
+		Error:   false,
+		Message: "Successfully find all payment history",
+		Data:    res,
+	}, nil
 }

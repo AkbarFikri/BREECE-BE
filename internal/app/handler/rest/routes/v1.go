@@ -15,6 +15,7 @@ type RouteConfig struct {
 	AuthHandler    rest.AuthHandler
 	EventHandler   rest.EventHandler
 	PaymentHandler rest.PaymentHandler
+	AdminHandler   rest.AdminHandler
 }
 
 func (c *RouteConfig) Setup() {
@@ -27,6 +28,7 @@ func (c *RouteConfig) ServeRoute() {
 	})
 	c.App.Use(gin.Logger())
 	c.App.Use(gin.Recovery())
+	c.App.Use(middleware.RateLimiter())
 	c.App.Use(middleware.CORSMiddleware())
 	v1 := c.App.Group("/api/v1")
 	v1.StaticFS("/docs", http.Dir("api/dist"))
@@ -40,8 +42,12 @@ func (c *RouteConfig) ServeRoute() {
 func (c *RouteConfig) AuthRoute(r *gin.RouterGroup) {
 	authEnds := r.Group("/auth")
 	authEnds.GET("/check", c.AuthHandler.HealthCheck)
-	authEnds.POST("/register", c.AuthHandler.Register)
-	authEnds.POST("/login", c.AuthHandler.Login)
+	authEnds.POST("/register", c.AuthHandler.RegisterUser)
+	authEnds.POST("/register/organizer", c.AuthHandler.RegisterOrganizer)
+	authEnds.POST("/register/admin", middleware.APIKEY(), c.AuthHandler.RegisterAdmin)
+	authEnds.POST("/login", c.AuthHandler.LoginUser)
+	authEnds.POST("/login/organizer", c.AuthHandler.LoginOrganizer)
+	authEnds.POST("/login/admin", c.AuthHandler.LoginAdmin)
 	authEnds.POST("/otp", c.AuthHandler.VerifyOTP)
 	authEnds.POST("/profile", c.AuthHandler.VerifyProfile)
 }
@@ -50,6 +56,9 @@ func (c *RouteConfig) UserRoute(r *gin.RouterGroup) {
 	userEnds := r.Group("/user")
 	userEnds.Use(middleware.JwtUser())
 	userEnds.GET("/current", c.UserHandler.Current)
+	userEnds.GET("/payment", c.UserHandler.GetPaymentHistory)
+	userEnds.GET("/event", c.UserHandler.GetTicketHisoty)
+	userEnds.GET("/organizer/event", c.UserHandler.GetCreatedEvent)
 }
 
 func (c *RouteConfig) EventRoute(r *gin.RouterGroup) {
@@ -57,10 +66,23 @@ func (c *RouteConfig) EventRoute(r *gin.RouterGroup) {
 	eventEnds.Use(middleware.JwtUser())
 	eventEnds.POST("/", middleware.OrganizerRole(), c.EventHandler.PostEvent)
 	eventEnds.GET("/", c.EventHandler.GetEvent)
+	eventEnds.GET("/category", c.EventHandler.GetEventCategory)
+	eventEnds.GET("/:id", c.EventHandler.GetEventDetails)
+	eventEnds.GET("/:id/participant", middleware.OrganizerRole(), c.EventHandler.GetEventParticipant)
 }
 
 func (c *RouteConfig) PaymentRoute(r *gin.RouterGroup) {
 	paymentEnds := r.Group("/payment")
 	paymentEnds.POST("/checkout", middleware.JwtUser(), middleware.UserOnly(), c.PaymentHandler.Checkout)
 	paymentEnds.POST("/verify", c.PaymentHandler.Verify)
+}
+
+func (c *RouteConfig) AdminRoute(r *gin.RouterGroup) {
+	adminEnds := r.Group("/admin")
+	adminEnds.Use(middleware.JwtUser())
+	adminEnds.Use(middleware.AdminRole())
+	adminEnds.GET("/organizer", c.AdminHandler.GetOrganizer)
+	adminEnds.GET("/organizer/:id", c.AdminHandler.GetOrganizer)
+	adminEnds.PATCH("/organizer/verify", c.AdminHandler.VerifyOrganizer)
+	adminEnds.POST("/event/category", c.AdminHandler.PostCategory)
 }

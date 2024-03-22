@@ -15,3 +15,10 @@ type EmailNotification struct {
 	EventStart string
 	Venue      string
 }
+
+type EmailApproval struct {
+	Subject string
+	Email   string
+	Name    string
+	Status  string
+}

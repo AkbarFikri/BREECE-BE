@@ -17,9 +17,10 @@ type EventRepository interface {
 	FindById(id string) (entity.Event, error)
 	FindAllPublic(page int) ([]entity.Event, error)
 	FindWithFilter(params model.FilterParam) ([]entity.Event, error)
-	FindForBooking(id string) (entity.Event, error)
+	FindByOrganizer(id string) ([]entity.Event, error)
 	Update(event entity.Event) error
-	UpdateFailurePayment(id string) error
+	UpdateTicketDecrement(event entity.Event) error
+	UpdateTicketIncrement(event entity.Event) error
 	Insert(event entity.Event) error
 }
 
@@ -42,6 +43,16 @@ func (r *eventRepository) FindById(id string) (entity.Event, error) {
 	return event, nil
 }
 
+func (r *eventRepository) FindByOrganizer(id string) ([]entity.Event, error) {
+	var events []entity.Event
+
+	if err := r.db.Where("organize_by = ?", id).Find(&events).Error; err != nil {
+		return events, err
+	}
+
+	return events, nil
+}
+
 // FindAllPublic implements EventRepository.
 func (r *eventRepository) FindAllPublic(page int) ([]entity.Event, error) {
 	var events []entity.Event
@@ -59,7 +70,7 @@ func (r *eventRepository) FindWithFilter(params model.FilterParam) ([]entity.Eve
 	sql := "SELECT * FROM events"
 
 	if params.Search != "" {
-		sql = fmt.Sprintf("%s WHERE title LIKE '%%%s%%' OR description LIKE '%%%s%%'", sql, params.Search, params.Search)
+		sql = fmt.Sprintf("%s WHERE title ILIKE '%%%s%%' OR description ILIKE '%%%s%%'", sql, params.Search, params.Search)
 	}
 
 	if params.Category != "" {
@@ -73,20 +84,18 @@ func (r *eventRepository) FindWithFilter(params model.FilterParam) ([]entity.Eve
 
 	if params.Place != "" {
 		if strings.Contains(sql, "WHERE") {
-			sql = fmt.Sprintf("%s OR tempat LIKE '%%%s%%'", sql, params.Place)
+			sql = fmt.Sprintf("%s OR tempat ILIKE '%%%s%%'", sql, params.Place)
 		} else {
-			sql = fmt.Sprintf("%s WHERE tempat LIKE '%%%s%%'", sql, params.Place)
+			sql = fmt.Sprintf("%s WHERE tempat ILIKE '%%%s%%'", sql, params.Place)
 		}
 	}
 
 	if params.Date != "" {
-		// data, _ := time.Parse("2006-01-02 15:04:05 -0700 MST", params.Date)
 		if strings.Contains(sql, "WHERE") {
 			sql = fmt.Sprintf("%s AND CAST(date as DATE) = '%s'", sql, params.Date)
 		} else {
 			sql = fmt.Sprintf("%s WHERE CAST(date as DATE) = '%s'", sql, params.Date)
 		}
-
 	}
 
 	if params.IsPublic {
@@ -97,21 +106,7 @@ func (r *eventRepository) FindWithFilter(params model.FilterParam) ([]entity.Eve
 		}
 	}
 
-	// if params.Sort != "" {
-	// 	sql = fmt.Sprintf("%s ORDER BY date %s", sql, params.Sort)
-	// }
-
 	perPage := 10
-
-	// if sql != "" {
-	// 	if err := r.db.Where(sql).Limit(perPage).Offset((params.Page - 1) * perPage).Find(&events).Error; err != nil {
-	// 		return events, err
-	// 	}
-	// } else {
-	// 	if err := r.db.Limit(perPage).Offset((params.Page - 1) * perPage).Find(&events).Error; err != nil {
-	// 		return events, err
-	// 	}
-	// }
 
 	sql = fmt.Sprintf("%s OFFSET %d LIMIT %d", sql, (params.Page-1)*perPage, perPage)
 
@@ -124,13 +119,15 @@ func (r *eventRepository) FindWithFilter(params model.FilterParam) ([]entity.Eve
 
 func (r *eventRepository) FindForBooking(id string) (entity.Event, error) {
 	var event entity.Event
+
 	tx := r.db.Begin()
 
+	//TODO ???
 	if err := tx.Clauses(clause.Locking{Strength: "UPDATE"}).Where("id = ?", id).First(&event).Error; err != nil {
-		tx.Rollback()
 		return event, err
 	}
 
+	// TODO Perbaikin Logic tidak pada tempatnya...
 	if event.TicketQty == 0 {
 		tx.Rollback()
 		return event, errors.New("ticket is sold out")
@@ -159,35 +156,26 @@ func (r *eventRepository) Insert(event entity.Event) error {
 	return nil
 }
 
-func (r *eventRepository) UpdateFailurePayment(id string) error {
-	var event entity.Event
-
-	tx := r.db.Begin()
-
-	if err := tx.Clauses(clause.Locking{Strength: "UPDATE"}).Where("id = ?", id).First(&event).Error; err != nil {
-		tx.Rollback()
+// Update implements EventRepository.
+func (r *eventRepository) Update(event entity.Event) error {
+	if err := r.db.Save(event).Error; err != nil {
 		return err
 	}
+	return nil
+}
 
-	event.TicketQty = event.TicketQty + 1
-
-	if err := tx.Save(&event).Error; err != nil {
-		tx.Rollback()
-		return err
-	}
-
-	if err := tx.Commit().Error; err != nil {
-		tx.Rollback()
+func (r *eventRepository) UpdateTicketDecrement(event entity.Event) error {
+	if err := r.db.Model(&entity.Event{}).Where("id = ?", event.ID).Clauses(clause.Locking{Strength: "UPDATE"}).Updates(&entity.Event{TicketQty: event.TicketQty - 1}).Error; err != nil {
 		return err
 	}
 
 	return nil
 }
 
-// Update implements EventRepository.
-func (r *eventRepository) Update(event entity.Event) error {
-	if err := r.db.Save(event).Error; err != nil {
+func (r *eventRepository) UpdateTicketIncrement(event entity.Event) error {
+	if err := r.db.Model(&entity.Event{}).Where("id = ?", event.ID).Clauses(clause.Locking{Strength: "UPDATE"}).Updates(&entity.Event{TicketQty: event.TicketQty + 1}).Error; err != nil {
 		return err
 	}
+
 	return nil
 }

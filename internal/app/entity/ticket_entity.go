@@ -8,4 +8,6 @@ type Ticket struct {
 	InvoiceID string    `gorm:"not null"`
 	EventID   string    `gorm:"not null"`
 	CreatedAt time.Time `gorm:"not null"`
+	Event     Event
+	User      User
 }

@@ -1,14 +1,18 @@
 package main
 
 import (
+	"os"
+
 	"github.com/joho/godotenv"
 
 	"github.com/AkbarFikri/BREECE-BE/internal/app/config"
+
 )
 
 func main() {
 	err := godotenv.Load()
-	if err != nil {
+	env := os.Getenv("ENV")
+	if err != nil && env == "" {
 		panic("Failed to load env file")
 	}
 

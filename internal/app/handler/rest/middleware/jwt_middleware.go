@@ -2,12 +2,14 @@ package middleware
 
 import (
 	"net/http"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt"
 
 	"github.com/AkbarFikri/BREECE-BE/internal/pkg/helper"
 	"github.com/AkbarFikri/BREECE-BE/internal/pkg/model"
+
 )
 
 func JwtUser() gin.HandlerFunc {
@@ -18,6 +20,13 @@ func JwtUser() gin.HandlerFunc {
 		if c.GetHeader("Authorization") == "" {
 			res.Error = true
 			res.Message = "Authorization is required for this endpoint"
+			res.Data = nil
+			c.AbortWithStatusJSON(http.StatusForbidden, res)
+		}
+
+		if !strings.Contains(c.GetHeader("Authorization"), "Bearer") {
+			res.Error = true
+			res.Message = "accessToken invalid or expired"
 			res.Data = nil
 			c.AbortWithStatusJSON(http.StatusForbidden, res)
 		}
