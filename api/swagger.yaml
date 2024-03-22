@@ -1548,6 +1548,64 @@ paths:
                     example:
         "500":
           description: Internal server error
+  /admin/event/category:
+    post:
+      tags:
+        - Admin
+      summary: Its use for post new event category
+      operationId: postNewEventCategory
+      security:
+        - bearerAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  example: Webinar
+        required: true
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: boolean
+                    example: false
+                  message:
+                    type: string
+                    example: Successfully to create category
+                  data:
+                    type: object
+                    properties:
+                      id:
+                        type: string
+                        format: uuid
+                      name:
+                        type: string
+        "400":
+          description: Invalid Request data
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: Bad request, data provided is invalid
+                  data:
+                    type: object
+                    example:
+        "500":
+          description: Internal server error
 
 components:
   securitySchemes:

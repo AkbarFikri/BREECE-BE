@@ -10,7 +10,6 @@ import (
 	"github.com/AkbarFikri/BREECE-BE/internal/app/service"
 	"github.com/AkbarFikri/BREECE-BE/internal/pkg/mailer"
 	"github.com/AkbarFikri/BREECE-BE/internal/pkg/supabase"
-
 )
 
 type StartUpConfig struct {
@@ -36,7 +35,7 @@ func StartUp(config *StartUpConfig) {
 	eventService := service.NewEventService(eventRepository, supabase, categoryRepository)
 	paymentService := service.NewPaymentService(invoiceRepository, eventRepository)
 	ticketService := service.NewTicketService(eventRepository, invoiceRepository, ticketRepository, userRepository, mailer)
-	adminService := service.NewAdminService(userRepository, mailer)
+	adminService := service.NewAdminService(userRepository, mailer, categoryRepository)
 
 	// Handler
 	authHandler := rest.NewAuthHandler(userService)

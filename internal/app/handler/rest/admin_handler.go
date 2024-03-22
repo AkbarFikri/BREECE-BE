@@ -8,7 +8,6 @@ import (
 	"github.com/AkbarFikri/BREECE-BE/internal/app/service"
 	"github.com/AkbarFikri/BREECE-BE/internal/pkg/helper"
 	"github.com/AkbarFikri/BREECE-BE/internal/pkg/model"
-
 )
 
 type AdminHandler struct {
@@ -55,6 +54,27 @@ func (h *AdminHandler) VerifyOrganizer(ctx *gin.Context) {
 	res, err := h.adminService.VerifyOrganizer(req)
 	if err != nil {
 		helper.ErrorResponse(ctx, res)
+		return
+	}
+
+	helper.SuccessResponse(ctx, res)
+}
+
+func (h *AdminHandler) PostCategory(ctx *gin.Context) {
+	var req model.CategoriesRequest
+
+	if err := ctx.ShouldBindJSON(&req); err != nil {
+		helper.ErrorResponse(ctx, model.ServiceResponse{
+			Code:    http.StatusBadRequest,
+			Error:   true,
+			Message: "Invalid data provided",
+		})
+	}
+
+	res, err := h.adminService.PostCategory(req)
+	if err != nil {
+		helper.ErrorResponse(ctx, res)
+		return
 	}
 
 	helper.SuccessResponse(ctx, res)

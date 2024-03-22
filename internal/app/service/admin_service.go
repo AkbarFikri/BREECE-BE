@@ -4,8 +4,10 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/AkbarFikri/BREECE-BE/internal/app/entity"
 	"github.com/AkbarFikri/BREECE-BE/internal/app/repository"
 	"github.com/AkbarFikri/BREECE-BE/internal/pkg/gocron"
+	"github.com/AkbarFikri/BREECE-BE/internal/pkg/helper"
 	"github.com/AkbarFikri/BREECE-BE/internal/pkg/mailer"
 	"github.com/AkbarFikri/BREECE-BE/internal/pkg/model"
 
@@ -16,17 +18,21 @@ type AdminService interface {
 	FetchOrganizerDetail(id string) (model.ServiceResponse, error)
 	FetchUser() (model.ServiceResponse, error)
 	VerifyOrganizer(req model.OrganizerVerifyRequest) (model.ServiceResponse, error)
+	PostCategory(req model.CategoriesRequest) (model.ServiceResponse, error)
 }
 
 type adminService struct {
-	UserRepository repository.UserRepository
-	Mailer         mailer.EmailService
+	UserRepository     repository.UserRepository
+	CategoryRepository repository.CategoryRepository
+	Mailer             mailer.EmailService
 }
 
-func NewAdminService(ur repository.UserRepository, mailer mailer.EmailService) AdminService {
+func NewAdminService(ur repository.UserRepository, mailer mailer.EmailService,
+	cr repository.CategoryRepository) AdminService {
 	return &adminService{
-		UserRepository: ur,
-		Mailer:         mailer,
+		UserRepository:     ur,
+		CategoryRepository: cr,
+		Mailer:             mailer,
 	}
 }
 
@@ -165,6 +171,33 @@ func (s *adminService) VerifyOrganizer(req model.OrganizerVerifyRequest) (model.
 		Code:    http.StatusOK,
 		Error:   false,
 		Message: "Successfully verify organizer profile",
+		Data:    res,
+	}, nil
+}
+
+func (s *adminService) PostCategory(req model.CategoriesRequest) (model.ServiceResponse, error) {
+	category := entity.Category{
+		ID:   helper.GenerateRandomString(36),
+		Name: req.Name,
+	}
+
+	if err := s.CategoryRepository.Insert(category); err != nil {
+		return model.ServiceResponse{
+			Code:    http.StatusInternalServerError,
+			Error:   true,
+			Message: "Failed to create category",
+		}, err
+	}
+
+	res := model.CategoriesResponse{
+		ID:   category.ID,
+		Name: category.Name,
+	}
+
+	return model.ServiceResponse{
+		Code:    http.StatusOK,
+		Error:   false,
+		Message: "Successfully create category",
 		Data:    res,
 	}, nil
 }

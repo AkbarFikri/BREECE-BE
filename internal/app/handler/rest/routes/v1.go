@@ -84,4 +84,5 @@ func (c *RouteConfig) AdminRoute(r *gin.RouterGroup) {
 	adminEnds.GET("/organizer", c.AdminHandler.GetOrganizer)
 	adminEnds.GET("/organizer/:id", c.AdminHandler.GetOrganizer)
 	adminEnds.PATCH("/organizer/verify", c.AdminHandler.VerifyOrganizer)
+	adminEnds.POST("/event/category", c.AdminHandler.PostCategory)
 }

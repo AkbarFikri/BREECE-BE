@@ -2,7 +2,6 @@ package model
 
 import (
 	"mime/multipart"
-
 )
 
 type FilterParam struct {
@@ -52,4 +51,8 @@ type EventResponse struct {
 type CategoriesResponse struct {
 	ID   string `json:"id"`
 	Name string `json:"name"`
+}
+
+type CategoriesRequest struct {
+	Name string `json:"name" binding:"required,alpha"`
 }
