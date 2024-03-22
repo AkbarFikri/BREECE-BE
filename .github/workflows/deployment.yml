@@ -1,9 +1,8 @@
-
 name: CD
 
 on:
   push:
-    branches: [ main ]
+    branches: [main]
 
 jobs:
   build:
@@ -21,6 +20,7 @@ jobs:
           port: ${{ secrets.PORT }}
           script: |
             cd /home/lightyredstone/app/breece
+            git stash
             git pull origin main
             git status
             export PATH=$PATH:/usr/local/go/bin
