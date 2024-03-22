@@ -4,7 +4,6 @@ import (
 	"gorm.io/gorm"
 
 	"github.com/AkbarFikri/BREECE-BE/internal/app/entity"
-
 )
 
 type InvoiceRepository interface {
@@ -48,7 +47,7 @@ func (r *invoiceRepository) FindByEventId(id string) ([]entity.Invoice, error) {
 // FindByUserId implements InvoiceRepository.
 func (r *invoiceRepository) FindByUserId(id string) ([]entity.Invoice, error) {
 	var invoices []entity.Invoice
-	if err := r.db.Where("user_id = ?", id).Find(&invoices).Error; err != nil {
+	if err := r.db.Preload("Event").Where("user_id = ?", id).Find(&invoices).Error; err != nil {
 		return invoices, err
 	}
 	return invoices, nil

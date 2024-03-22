@@ -10,7 +10,6 @@ import (
 	"github.com/AkbarFikri/BREECE-BE/internal/app/service"
 	"github.com/AkbarFikri/BREECE-BE/internal/pkg/mailer"
 	"github.com/AkbarFikri/BREECE-BE/internal/pkg/supabase"
-
 )
 
 type StartUpConfig struct {
@@ -29,18 +28,21 @@ func StartUp(config *StartUpConfig) {
 	cacheRepository := repository.NewCacheRepository()
 	invoiceRepository := repository.NewInvoiceRepository(config.DB)
 	ticketRepository := repository.NewTicketRepository(config.DB)
+	categoryRepository := repository.NewCategoryRepository(config.DB)
 
 	// Service
 	userService := service.NewUserService(userRepository, cacheRepository, supabase, mailer)
-	eventService := service.NewEventService(eventRepository, supabase)
+	eventService := service.NewEventService(eventRepository, supabase, categoryRepository)
 	paymentService := service.NewPaymentService(invoiceRepository, eventRepository)
 	ticketService := service.NewTicketService(eventRepository, invoiceRepository, ticketRepository, userRepository, mailer)
+	adminService := service.NewAdminService(userRepository, mailer, categoryRepository)
 
 	// Handler
 	authHandler := rest.NewAuthHandler(userService)
-	userHandler := rest.NewUserHandler(userService)
-	eventHandler := rest.NewEventHandler(eventService)
+	userHandler := rest.NewUserHandler(userService, paymentService, ticketService, eventService)
+	eventHandler := rest.NewEventHandler(eventService, ticketService)
 	paymentHandler := rest.NewPaymentHandler(paymentService, ticketService)
+	adminHandler := rest.NewAdminHandler(adminService)
 
 	routeSetting := routes.RouteConfig{
 		App:            config.App,
@@ -48,6 +50,7 @@ func StartUp(config *StartUpConfig) {
 		UserHandler:    userHandler,
 		EventHandler:   eventHandler,
 		PaymentHandler: paymentHandler,
+		AdminHandler:   adminHandler,
 	}
 	routeSetting.Setup()
 }
