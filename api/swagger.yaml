@@ -621,6 +621,221 @@ paths:
                     example:
         "500":
           description: Internal server error
+  /user/payment:
+    get:
+      tags:
+        - User
+      summary: Get user payment history
+      operationId: getUserPaymentHistory
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: boolean
+                    example: false
+                  message:
+                    type: string
+                    example: Successfully find all payment history
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                        amount:
+                          type: integer
+                        status:
+                          type: string
+                        event:
+                          type: object
+                          properties:
+                            id:
+                              type: string
+                              format: uuid
+                            title:
+                              type: string
+                            description:
+                              type: string
+                            speakers:
+                              type: array
+                              items: {}
+                            speaker_roles:
+                              type: array
+                              items: {}
+                            place:
+                              type: string
+                            date:
+                              type: string
+                              format: date-time
+                            start_at:
+                              type: string
+                              format: date-time
+                            organize_by:
+                              type: string
+                              format: uuid
+  /user/event:
+    get:
+      tags:
+        - User
+      summary: Get user event ticket history
+      operationId: getUserEventTicketHistory
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: boolean
+                    example: false
+                  message:
+                    type: string
+                    example: Successfully find all ticket history
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                        user_id:
+                          type: string
+                        event_id:
+                          type: string
+                        invoice_id:
+                          type: string
+                        created_at:
+                          type: string
+                          format: date-time
+                        event:
+                          type: object
+                          properties:
+                            id:
+                              type: string
+                              format: uuid
+                            title:
+                              type: string
+                            description:
+                              type: string
+                            speakers:
+                              type: array
+                              items: {}
+                            speaker_roles:
+                              type: array
+                              items: {}
+                            place:
+                              type: string
+                            date:
+                              type: string
+                              format: date-time
+                            start_at:
+                              type: string
+                              format: date-time
+                            organize_by:
+                              type: string
+                              format: uuid
+
+        "404":
+          description: Record not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: Record not found
+                  data:
+                    type: object
+                    example:
+        "500":
+          description: Internal server error
+
+  /user/organizer/event:
+    get:
+      tags:
+        - User
+      summary: Get event created by organizer user
+      operationId: getEventCreatedByOrganizerUser
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: boolean
+                    example: false
+                  message:
+                    type: string
+                    example: Successfully find all event
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                          format: uuid
+                        title:
+                          type: string
+                        description:
+                          type: string
+                        speakers:
+                          type: array
+                          items: {}
+                        speaker_roles:
+                          type: array
+                          items: {}
+                        place:
+                          type: string
+                        date:
+                          type: string
+                          format: date-time
+                        start_at:
+                          type: string
+                          format: date-time
+                        organize_by:
+                          type: string
+                          format: uuid
+
+        "404":
+          description: Record not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: Record not found
+                  data:
+                    type: object
+                    example:
+        "500":
+          description: Internal server error
 
   /event:
     get:
@@ -837,6 +1052,55 @@ paths:
                     example:
         "500":
           description: Internal server error
+  /event/category:
+    get:
+      tags:
+        - Event
+      summary: Its use for fetch event category
+      operationId: getEventCategory
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: boolean
+                    example: false
+                  message:
+                    type: string
+                    example: Successfully to verified profile
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                          format: uuid
+                        name:
+                          type: string
+
+        "404":
+          description: Record not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: Record not found
+                  data:
+                    type: object
+                    example:
+        "500":
+          description: Internal server error
   /event/{id}:
     get:
       tags:
@@ -906,6 +1170,79 @@ paths:
                   message:
                     type: string
                     example: Bad request, data provided is invalid
+                  data:
+                    type: object
+                    example:
+        "500":
+          description: Internal server error
+  /event/{id}/participant:
+    get:
+      tags:
+        - Event
+      summary: Its use for fetch participant ticket in event
+      operationId: getParticipant
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: boolean
+                    example: false
+                  message:
+                    type: string
+                    example: Successfully find all participant ticket
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                        user_id:
+                          type: string
+                        event_id:
+                          type: string
+                        invoice_id:
+                          type: string
+                        created_at:
+                          type: string
+                          format: date-time
+                        user:
+                          type: object
+                          properties:
+                            id:
+                              type: string
+                            email:
+                              type: string
+                              example: emailmu@gmail.com
+                            full_name:
+                              type: string
+                            nim_nik:
+                              type: string
+                            prodi:
+                              type: string
+                            universitas:
+                              type: string
+
+        "404":
+          description: Record not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: Record not found
                   data:
                     type: object
                     example:

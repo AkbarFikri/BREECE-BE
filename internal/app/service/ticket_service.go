@@ -91,8 +91,12 @@ func (s *ticketService) ConfirmedPayment(invoiceId string) error {
 // FailurePayment implements TicketService.
 func (s *ticketService) FailurePayment(invoiceId string) error {
 	invoice, _ := s.InvoiceRepository.FindById(invoiceId)
+	event, err := s.EventRepository.FindById(invoice.EventID)
+	if err != nil {
+		fmt.Println(err)
+	}
 
-	if err := s.EventRepository.UpdateFailurePayment(invoice.EventID); err != nil {
+	if err := s.EventRepository.UpdateTicketIncrement(event); err != nil {
 		return err
 	}
 

@@ -2,6 +2,7 @@ package service
 
 import (
 	"errors"
+	"fmt"
 	"net/http"
 	"os"
 	"time"
@@ -25,6 +26,7 @@ type PaymentService interface {
 type paymentService struct {
 	InvoiceRepository repository.InvoiceRepository
 	EventRepository   repository.EventRepository
+	TicketRepository  repository.TicketRepository
 	Client            snap.Client
 }
 
@@ -42,23 +44,29 @@ func NewPaymentService(ir repository.InvoiceRepository, er repository.EventRepos
 
 // GenerateUrlAndToken implements PaymentService.
 func (s *paymentService) GenerateUrlAndToken(user model.UserTokenData, req model.PaymentRequest) (model.ServiceResponse, error) {
-	event, err := s.EventRepository.FindForBooking(req.EventID)
-
-	// TODO Perbaiki !!!!
+	event, err := s.EventRepository.FindById(req.EventID)
 	if err != nil {
-		if err.Error() == "ticket is sold out" {
-			return model.ServiceResponse{
-				Code:    http.StatusUnprocessableEntity,
-				Error:   true,
-				Message: "Ticket is sold out",
-			}, err
-		} else {
-			return model.ServiceResponse{
-				Code:    http.StatusInternalServerError,
-				Error:   true,
-				Message: "Something went wrong, failed to find event with id provided",
-			}, err
-		}
+		return model.ServiceResponse{
+			Code:    http.StatusBadRequest,
+			Error:   true,
+			Message: "Something went wrong, failed to find event",
+		}, err
+	}
+
+	if event.TicketQty == 0 {
+		return model.ServiceResponse{
+			Code:    http.StatusNotAcceptable,
+			Error:   true,
+			Message: "Ticket is sold out",
+		}, err
+	}
+
+	if err := s.EventRepository.UpdateTicketDecrement(event); err != nil {
+		return model.ServiceResponse{
+			Code:    http.StatusBadRequest,
+			Error:   true,
+			Message: "Something went wrong, failed to update event ticket_qty",
+		}, err
 	}
 
 	invoice := entity.Invoice{
@@ -75,6 +83,18 @@ func (s *paymentService) GenerateUrlAndToken(user model.UserTokenData, req model
 	if event.Price == 0 {
 		invoice.Snap = "success"
 		invoice.Status = "success"
+
+		ticket := entity.Ticket{
+			ID:        uuid.NewString(),
+			UserID:    user.ID,
+			InvoiceID: invoice.ID,
+			EventID:   event.ID,
+			CreatedAt: time.Now().UTC(),
+		}
+
+		if err := s.TicketRepository.Insert(ticket); err != nil {
+			fmt.Print("Error")
+		}
 	} else {
 		payReq := &snap.Request{
 			TransactionDetails: midtrans.TransactionDetails{

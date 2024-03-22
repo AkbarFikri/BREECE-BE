@@ -2,6 +2,7 @@ package model
 
 import (
 	"mime/multipart"
+
 )
 
 type FilterParam struct {
@@ -46,4 +47,9 @@ type EventResponse struct {
 	TicketQty    uint16   `json:"ticket_qty"`
 	OrganizeBy   string   `json:"organize_by"`
 	IsPublic     bool     `json:"is_public"`
+}
+
+type CategoriesResponse struct {
+	ID   string `json:"id"`
+	Name string `json:"name"`
 }
