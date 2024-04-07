@@ -16,6 +16,12 @@ jobs:
     permissions:
       deployments: write
     steps:
+      - name: 📝 Get latest API specification
+        uses: actions/checkout@v4
+        with:
+          sparse-checkout: |-
+            api/openapi.yaml
+          sparse-checkout-cone-mode: false
       - name: 🐳 Run Container
         uses: addnab/docker-run-action@v3
         with:
