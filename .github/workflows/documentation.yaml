@@ -20,7 +20,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           sparse-checkout: |-
-            api/openapi.yaml
+            api/swagger.yaml
           sparse-checkout-cone-mode: false
       - name: 🐳 Run Container
         uses: addnab/docker-run-action@v3
