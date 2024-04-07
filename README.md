@@ -76,7 +76,7 @@ List all the Tech Stack we use to build the system in this this project.
 
 ### 🔩 API Documentation
 
-- [Swagger](https://breece.akbarfikri.site/api/v1/docs)
+- [Swagger](https://breece-docs.vercel.app/)
 
 _Note : If you have question about the documentation feel free to send message to me._
 
