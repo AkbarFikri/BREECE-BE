@@ -1,0 +1,37 @@
+name: 🚀 Deploy API Documenation using SwaggerUI OAS 3.1
+env:
+  VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+  VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - api/swagger.yaml
+
+jobs:
+  build:
+    name: 💫 Generate SwaggerUI & Deploy
+    runs-on: ubuntu-latest
+    permissions:
+      deployments: write
+    steps:
+      - name: 🐳 Run Container
+        uses: addnab/docker-run-action@v3
+        with:
+          image: swaggerapi/swagger-ui:v5.10.5
+          options: --name swagger_doc
+      - name: 📂 Copy Generated Swagger UI
+        shell: bash
+        run: |-
+          echo "Copying SwaggerUI static source code to Runner"
+          docker cp swagger_doc:/usr/share/nginx/html ${{ github.workspace }}/public
+          echo "Copying spec file to /public"
+          cp ${{ github.workspace }}/api/swagger.yaml ${{ github.workspace }}/public
+          echo "Replacing SwaggerUI URL to use local spec file instead"
+          sed -i 's/https:\/\/petstore.swagger.io\/v2\/swagger.json/.\/swagger.yaml/g' ${{ github.workspace }}/public/swagger-initializer.js
+      - name: 🌠 Deploy to Vercel
+        working-directory: ${{ github.workspace }}/public
+        run: |-
+          npm install --global vercel@latest
+          vercel --token=${{ secrets.VERCEL_TOKEN }}
