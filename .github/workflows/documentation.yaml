@@ -35,7 +35,6 @@ jobs:
           docker cp swagger_doc:/usr/share/nginx/html ${{ github.workspace }}/public
           echo "Copying spec file & Apps logo to /public"
           cp ${{ github.workspace }}/api/swagger.yaml ${{ github.workspace }}/public
-          cp ${{ github.workspace }}/public/Breece-Logo.png ${{ github.workspace }}/public
           echo "Replacing SwaggerUI URL to use local spec file instead"
           sed -i 's/https:\/\/petstore.swagger.io\/v2\/swagger.json/.\/swagger.yaml/g' ${{ github.workspace }}/public/swagger-initializer.js
           echo "Replacing title and logo of the website"
