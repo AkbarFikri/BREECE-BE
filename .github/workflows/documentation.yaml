@@ -32,17 +32,18 @@ jobs:
         shell: bash
         run: |-
           echo "Copying SwaggerUI static source code to Runner"
-          docker cp swagger_doc:/usr/share/nginx/html ${{ github.workspace }}/public
-          echo "Copying spec file & Apps logo to /public"
-          cp ${{ github.workspace }}/api/swagger.yaml ${{ github.workspace }}/public
+          docker cp swagger_doc:/usr/share/nginx/html ${{ github.workspace }}/app
+          echo "Copying spec file & Apps logo to /app"
+          cp ${{ github.workspace }}/api/swagger.yaml ${{ github.workspace }}/app
+          cp ${{ github.workspace }}/public/Breece-Logo.png ${{ github.workspace }}/app
           echo "Replacing SwaggerUI URL to use local spec file instead"
-          sed -i 's/https:\/\/petstore.swagger.io\/v2\/swagger.json/.\/swagger.yaml/g' ${{ github.workspace }}/public/swagger-initializer.js
+          sed -i 's/https:\/\/petstore.swagger.io\/v2\/swagger.json/.\/swagger.yaml/g' ${{ github.workspace }}/app/swagger-initializer.js
           echo "Replacing title and logo of the website"
-          sed -i 's/<title>Swagger UI<\/title>/<title>Documentation - Breece API<\/title>/g' index.html
-          sed -i 's/href=".\/favicon-16x16.png"/href=".\/Breece-Logo.png"/g' nama_file.html
-          sed -i 's/href=".\/favicon-32x32.png"/href=".\/Breece-Logo.png"/g' nama_file.html
+          sed -i 's/<title>Swagger UI<\/title>/<title>Documentation - Breece API<\/title>/g' ${{ github.workspace }}/app/index.html
+          sed -i 's/href=".\/favicon-16x16.png"/href=".\/Breece-Logo.png"/g' ${{ github.workspace }}/app/index.html
+          sed -i 's/href=".\/favicon-32x32.png"/href=".\/Breece-Logo.png"/g' ${{ github.workspace }}/app/index.html
       - name: 🌠 Deploy to Vercel
-        working-directory: ${{ github.workspace }}/public
+        working-directory: ${{ github.workspace }}/app
         run: |-
           npm install --global vercel@latest
           vercel --token=${{ secrets.VERCEL_TOKEN }} --prod
