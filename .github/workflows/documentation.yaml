@@ -21,6 +21,7 @@ jobs:
         with:
           sparse-checkout: |-
             api/swagger.yaml
+            public/Breece-Logo.png
           sparse-checkout-cone-mode: false
       - name: 🐳 Run Container
         uses: addnab/docker-run-action@v3
@@ -32,10 +33,15 @@ jobs:
         run: |-
           echo "Copying SwaggerUI static source code to Runner"
           docker cp swagger_doc:/usr/share/nginx/html ${{ github.workspace }}/public
-          echo "Copying spec file to /public"
+          echo "Copying spec file & Apps logo to /public"
           cp ${{ github.workspace }}/api/swagger.yaml ${{ github.workspace }}/public
+          cp ${{ github.workspace }}/public/Breece-Logo.png ${{ github.workspace }}/public
           echo "Replacing SwaggerUI URL to use local spec file instead"
           sed -i 's/https:\/\/petstore.swagger.io\/v2\/swagger.json/.\/swagger.yaml/g' ${{ github.workspace }}/public/swagger-initializer.js
+          echo "Replacing title and logo of the website"
+          sed -i 's/<title>Swagger UI<\/title>/<title>Documentation - Breece API<\/title>/g' index.html
+          sed -i 's/href=".\/favicon-16x16.png"/href=".\/Breece-Logo.png"/g' nama_file.html
+          sed -i 's/href=".\/favicon-32x32.png"/href=".\/Breece-Logo.png"/g' nama_file.html
       - name: 🌠 Deploy to Vercel
         working-directory: ${{ github.workspace }}/public
         run: |-

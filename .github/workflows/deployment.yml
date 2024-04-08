@@ -1,4 +1,4 @@
-name: CD
+name: 🎯 Build and deploy apps to server
 
 on:
   push:
