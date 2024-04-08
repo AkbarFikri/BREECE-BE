@@ -6,7 +6,6 @@ on:
     paths:
       - internal/
       - cmd/
-      - public/
 
 jobs:
   build:
